@@ -1,13 +1,24 @@
 
 #include "raylib.h"
-#include "raymath.h" // Required for vector math if needed later
+#include "raymath.h"
 
-struct MyStruct {
-  
-};
+struct Player {
+
+} player;
+
+// ------------------ HELPERS (MOVE TO A HEADER LIB LATER) -------------------
+
+inline Vector2 getKeyVector() {
+  return (Vector2){
+      (float)IsKeyDown(KEY_W) - (float)IsKeyDown(KEY_S),
+      (float)IsKeyDown(KEY_D) - (float)IsKeyDown(KEY_A),
+  };
+}
+
+// ---------------------------------------------------------------------------
 
 int main(void) {
-  InitWindow(800, 450, "raylib - Explicit WASD Movement");
+  InitWindow(800, 450, "THE LUCKY NEVER DIE");
 
   Camera3D camera = {0};
   camera.position = (Vector3){0.0f, 2.0f, 4.0f}; // Start position
@@ -24,16 +35,14 @@ int main(void) {
 
   while (!WindowShouldClose()) {
     Vector2 mouseDelta = GetMouseDelta();
+    Vector2 keyVector = getKeyVector();
 
-    UpdateCameraPro(&camera,
-                    (Vector3){
-                        (IsKeyDown(KEY_W) - IsKeyDown(KEY_S)) * moveSpeed,
-                        (IsKeyDown(KEY_D) - IsKeyDown(KEY_A)) * moveSpeed,
-                        0.0f // Up/Down
-                    },
-                    (Vector3){mouseDelta.x * mouseSensitivity,
-                              mouseDelta.y * mouseSensitivity, 0.0f},
-                    0.0f // Zoom
+    UpdateCameraPro(
+        &camera,
+        (Vector3){keyVector.x * moveSpeed, keyVector.y * moveSpeed, 0.0f},
+        (Vector3){mouseDelta.x * mouseSensitivity,
+                  mouseDelta.y * mouseSensitivity, 0.0f},
+        0.0f // Zoom
     );
 
     BeginDrawing();
