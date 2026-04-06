@@ -3,10 +3,17 @@
 #include "raymath.h"
 
 struct Player {
+  float speed = 0.5f;
+  float acceleration = 50.0f;
+  float friction = 10.0f;
 
+  Vector3 velocity = {0.0f, 0.0f, 0.0f};
 } player;
 
 // ------------------ HELPERS (MOVE TO A HEADER LIB LATER) -------------------
+
+Camera3D camera = {0};
+float mouseSensitivity = 0.15f;
 
 inline Vector2 getKeyVector() {
   return (Vector2){
@@ -15,45 +22,60 @@ inline Vector2 getKeyVector() {
   };
 }
 
-// ---------------------------------------------------------------------------
-
-int main(void) {
+void init() {
   InitWindow(800, 450, "THE LUCKY NEVER DIE");
 
-  Camera3D camera = {0};
-  camera.position = (Vector3){0.0f, 2.0f, 4.0f}; // Start position
-  camera.target = (Vector3){0.0f, 2.0f, 0.0f};   // Look at center
-  camera.up = (Vector3){0.0f, 1.0f, 0.0f};       // Up direction
+  camera.position = (Vector3){0.0f, 2.0f, 4.0f};
+  camera.target = (Vector3){0.0f, 2.0f, 0.0f};
+  camera.up = (Vector3){0.0f, 1.0f, 0.0f};
   camera.fovy = 60.0f;
   camera.projection = CAMERA_PERSPECTIVE;
 
-  float moveSpeed = 0.1f;
-  float mouseSensitivity = 0.15f;
-
-  DisableCursor(); // Locks mouse to center for FPS look
+  DisableCursor();
   SetTargetFPS(60);
+}
+
+// ---------------------------------------------------------------------------
+
+int main(void) {
+
+  init();
 
   while (!WindowShouldClose()) {
-    Vector2 mouseDelta = GetMouseDelta();
+    Vector2 deltaMouse = GetMouseDelta();
     Vector2 keyVector = getKeyVector();
+    float deltaTime = GetFrameTime();
 
-    UpdateCameraPro(
-        &camera,
-        (Vector3){keyVector.x * moveSpeed, keyVector.y * moveSpeed, 0.0f},
-        (Vector3){mouseDelta.x * mouseSensitivity,
-                  mouseDelta.y * mouseSensitivity, 0.0f},
-        0.0f // Zoom
-    );
+    if (Vector2Length(keyVector) > 0) {
+      player.velocity.x += keyVector.x * player.acceleration * deltaTime;
+      player.velocity.y += keyVector.y * player.acceleration * deltaTime;
+    }
+
+    player.velocity.x *= (1.0f - player.friction * deltaTime);
+    player.velocity.y *= (1.0f - player.friction * deltaTime);
+
+    UpdateCameraPro(&camera,
+                    (Vector3){player.velocity.x * deltaTime,
+                              player.velocity.y * deltaTime,
+                              0.0f},
+                    (Vector3){deltaMouse.x * mouseSensitivity,
+                              deltaMouse.y * mouseSensitivity, 0.0f},
+                    0.0f);
 
     BeginDrawing();
+
+
+
     ClearBackground(RAYWHITE);
     BeginMode3D(camera);
     DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
     DrawGrid(20, 1.0f);
-    DrawCube((Vector3){0, 1, -5}, 2, 2, 2, RED); // Target object
+    DrawCube((Vector3){0, 1, -5}, 2, 2, 2, RED);
+
+
+
     EndMode3D();
 
-    DrawText("WASD: Move | Mouse: Look", 10, 10, 20, DARKGRAY);
     EndDrawing();
   }
 
