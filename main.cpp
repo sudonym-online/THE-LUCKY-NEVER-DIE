@@ -4,12 +4,13 @@
 
 class Player {
 public:
+  float speed = 25.0f;
   float acceleration = 200.0f;
-  float friction = 8.0f;
+  float friction = 5.0f;
 
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
 
-  inline float getMaxSpeed() { return acceleration / friction; }
+  float getMaxSpeed() { return speed; }
 };
 
 Player player;
@@ -58,6 +59,12 @@ int main(void) {
 
     player.velocity.x *= (1.0f - player.friction * deltaTime);
     player.velocity.y *= (1.0f - player.friction * deltaTime);
+
+    float currentSpeed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
+    if (currentSpeed > player.speed) {
+      player.velocity.x = (player.velocity.x / currentSpeed) * player.speed;
+      player.velocity.y = (player.velocity.y / currentSpeed) * player.speed;
+    }
 
     float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
     float targetFov = 60.0f + (speed * 1.5f);
