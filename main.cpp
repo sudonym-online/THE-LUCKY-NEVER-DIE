@@ -3,7 +3,7 @@
 #include "raymath.h"
 
 struct Player {
-  float speed = 0.5f;
+  float speed = 50.0f;
   float acceleration = 50.0f;
   float friction = 10.0f;
 
@@ -53,6 +53,10 @@ int main(void) {
 
     player.velocity.x *= (1.0f - player.friction * deltaTime);
     player.velocity.y *= (1.0f - player.friction * deltaTime);
+
+    float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
+    float targetFov = 60.0f + (speed * 5.0f);
+    camera.fovy = Lerp(camera.fovy, targetFov, 8.0f * deltaTime);
 
     UpdateCameraPro(&camera,
                     (Vector3){player.velocity.x * deltaTime,
