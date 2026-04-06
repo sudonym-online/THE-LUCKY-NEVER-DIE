@@ -9,7 +9,7 @@ public:
 
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
 
-  float getMaxSpeed() { return acceleration / friction; }
+  inline float getMaxSpeed() { return acceleration / friction; }
 };
 
 Player player;
