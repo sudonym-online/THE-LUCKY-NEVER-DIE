@@ -2,13 +2,17 @@
 #include "raylib.h"
 #include "raymath.h"
 
-struct Player {
-  float speed = 50.0f;
-  float acceleration = 50.0f;
-  float friction = 10.0f;
+class Player {
+public:
+  float acceleration = 200.0f;
+  float friction = 8.0f;
 
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
-} player;
+
+  float getMaxSpeed() { return acceleration / friction; }
+};
+
+Player player;
 
 // ------------------ HELPERS (MOVE TO A HEADER LIB LATER) -------------------
 
@@ -47,16 +51,18 @@ int main(void) {
     float deltaTime = GetFrameTime();
 
     if (Vector2Length(keyVector) > 0) {
-      player.velocity.x += keyVector.x * player.acceleration * deltaTime;
-      player.velocity.y += keyVector.y * player.acceleration * deltaTime;
+      Vector2 inputDir = Vector2Normalize(keyVector);
+      player.velocity.x += inputDir.x * player.acceleration * deltaTime;
+      player.velocity.y += inputDir.y * player.acceleration * deltaTime;
     }
 
     player.velocity.x *= (1.0f - player.friction * deltaTime);
     player.velocity.y *= (1.0f - player.friction * deltaTime);
 
     float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
-    float targetFov = 60.0f + (speed * 5.0f);
+    float targetFov = 60.0f + (speed * 1.5f);
     camera.fovy = Lerp(camera.fovy, targetFov, 8.0f * deltaTime);
+
 
     UpdateCameraPro(&camera,
                     (Vector3){player.velocity.x * deltaTime,
