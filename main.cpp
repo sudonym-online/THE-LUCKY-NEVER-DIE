@@ -15,6 +15,8 @@ public:
   float acceleration = 200.0f;
   float friction = 5.0f;
   float height = 1.8f;
+  float jumpBufferTime = 0.20f;
+  float jumpBufferTimer = 0.0f;
 
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
 
@@ -88,10 +90,21 @@ int main(void) {
       player.velocity.y = (player.velocity.y / currentSpeed) * player.speed;
     }
 
-    // APPLY JUMP FORCE
+    // JUMP BUFFER INPUT
+    if (IsKeyPressed(KEY_SPACE)) {
+      player.jumpBufferTimer = player.jumpBufferTime;
+    }
+
+    // APPLY JUMP FORCE (with buffer)
     bool onGround = camera.position.y <= player.height;
-    if (IsKeyPressed(KEY_SPACE) && onGround) {
+    if (player.jumpBufferTimer > 0 && onGround) {
       player.velocity.z = player.speed + 20.0f;
+      player.jumpBufferTimer = 0;
+    }
+
+    // DECREMENT JUMP BUFFER
+    if (player.jumpBufferTimer > 0) {
+      player.jumpBufferTimer -= deltaTime;
     }
 
     float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
