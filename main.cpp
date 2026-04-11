@@ -2,6 +2,13 @@
 #include "raylib.h"
 #include "raymath.h"
 
+class World {
+public:
+  float gravity = 100.0f;
+};
+
+World world;
+
 class Player {
 public:
   float speed = 25.0f;
@@ -51,19 +58,38 @@ int main(void) {
     Vector2 keyVector = getKeyVector();
     float deltaTime = GetFrameTime();
 
+    // APPLY ACCELERATION / DECELERATION
     if (Vector2Length(keyVector) > 0) {
       Vector2 inputDir = Vector2Normalize(keyVector);
       player.velocity.x += inputDir.x * player.acceleration * deltaTime;
       player.velocity.y += inputDir.y * player.acceleration * deltaTime;
     }
 
+    // APPLY FRICTION
     player.velocity.x *= (1.0f - player.friction * deltaTime);
     player.velocity.y *= (1.0f - player.friction * deltaTime);
 
+    // APPLY GRAVITY
+    if (camera.position.y > 0.0f) {
+      player.velocity.z -= world.gravity * deltaTime;
+    }
+
+    // FLOOR DETECTION
+    if (camera.position.y <= 0.0f && player.velocity.z < 0) {
+      player.velocity.z = 0;
+    }
+
+    // APPLY MOVEMENT FORCE
     float currentSpeed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
     if (currentSpeed > player.speed) {
       player.velocity.x = (player.velocity.x / currentSpeed) * player.speed;
       player.velocity.y = (player.velocity.y / currentSpeed) * player.speed;
+    }
+
+    // APPLY JUMP FORCE
+    bool onGround = camera.position.y <= 0.0f;
+    if (IsKeyPressed(KEY_SPACE) && onGround) {
+      player.velocity.z = player.speed + 20.0f;
     }
 
     float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
@@ -72,9 +98,10 @@ int main(void) {
 
 
     UpdateCameraPro(&camera,
-                    (Vector3){player.velocity.x * deltaTime,
-                              player.velocity.y * deltaTime,
-                              0.0f},
+                    (Vector3){
+                        player.velocity.x * deltaTime,
+                        player.velocity.y * deltaTime,
+                        player.velocity.z * deltaTime},
                     (Vector3){deltaMouse.x * mouseSensitivity,
                               deltaMouse.y * mouseSensitivity, 0.0f},
                     0.0f);
