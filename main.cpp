@@ -14,6 +14,7 @@ public:
   float speed = 25.0f;
   float acceleration = 200.0f;
   float friction = 5.0f;
+  float height = 1.8f;
 
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
 
@@ -75,7 +76,8 @@ int main(void) {
     }
 
     // FLOOR DETECTION
-    if (camera.position.y <= 0.0f && player.velocity.z < 0) {
+    if (camera.position.y <= player.height) {
+      camera.position.y = player.height;
       player.velocity.z = 0;
     }
 
@@ -87,7 +89,7 @@ int main(void) {
     }
 
     // APPLY JUMP FORCE
-    bool onGround = camera.position.y <= 0.0f;
+    bool onGround = camera.position.y <= player.height;
     if (IsKeyPressed(KEY_SPACE) && onGround) {
       player.velocity.z = player.speed + 20.0f;
     }
