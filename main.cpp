@@ -1,14 +1,12 @@
-
 #include "raylib.h"
 #include "raymath.h"
 
 class World {
 public:
-  float gravity = 100.0f;
+  float gravity = 75.0f;
 };
 
 World world;
-
 class Player {
 public:
   float speed = 25.0f;
@@ -19,8 +17,28 @@ public:
   float jumpBufferTimer = 0.0f;
 
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
+  Model armModel;
 
-  float getMaxSpeed() { return speed; }
+  struct ArmConfig {
+    float dist = 0.8f;
+    float height = -2.8f;
+    float width = 4.5f;
+  } armConfig;
+
+  void drawArms(Camera3D camera) {
+    Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
+    Vector3 right = Vector3Normalize(Vector3CrossProduct({0, 1, 0}, forward));
+
+    Vector3 baseOffset = Vector3Add(Vector3Scale(forward, armConfig.dist), Vector3Scale({0, 1, 0}, armConfig.height));
+
+    Vector3 leftArmPos = Vector3Add(camera.position, Vector3Add(baseOffset, Vector3Scale(right, -armConfig.width)));
+    Vector3 rightArmPos = Vector3Add(camera.position, Vector3Add(baseOffset, Vector3Scale(right, armConfig.width)));
+
+    float armAngle = atan2f(forward.x, forward.z);
+
+    DrawModelEx(armModel, leftArmPos, {0, 1, 0}, armAngle * RAD2DEG, {1, 1, 1}, RED);
+    DrawModelEx(armModel, rightArmPos, {0, 1, 0}, armAngle * RAD2DEG, {-1, 1, 1}, RED);
+  }
 };
 
 Player player;
@@ -39,6 +57,9 @@ inline Vector2 getKeyVector() {
 
 void init() {
   InitWindow(800, 450, "THE LUCKY NEVER DIE");
+
+  // load arm 3d model
+  player.armModel = LoadModel("Assets/Arms.obj");
 
   camera.position = (Vector3){0.0f, 2.0f, 4.0f};
   camera.target = (Vector3){0.0f, 2.0f, 0.0f};
@@ -61,33 +82,13 @@ int main(void) {
     Vector2 keyVector = getKeyVector();
     float deltaTime = GetFrameTime();
 
-    // APPLY ACCELERATION / DECELERATION
+    // ------------------- INPUT -------------------
+
+    // MOVEMENT INPUT
     if (Vector2Length(keyVector) > 0) {
       Vector2 inputDir = Vector2Normalize(keyVector);
       player.velocity.x += inputDir.x * player.acceleration * deltaTime;
       player.velocity.y += inputDir.y * player.acceleration * deltaTime;
-    }
-
-    // APPLY FRICTION
-    player.velocity.x *= (1.0f - player.friction * deltaTime);
-    player.velocity.y *= (1.0f - player.friction * deltaTime);
-
-    // APPLY GRAVITY
-    if (camera.position.y > 0.0f) {
-      player.velocity.z -= world.gravity * deltaTime;
-    }
-
-    // FLOOR DETECTION
-    if (camera.position.y <= player.height) {
-      camera.position.y = player.height;
-      player.velocity.z = 0;
-    }
-
-    // APPLY MOVEMENT FORCE
-    float currentSpeed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
-    if (currentSpeed > player.speed) {
-      player.velocity.x = (player.velocity.x / currentSpeed) * player.speed;
-      player.velocity.y = (player.velocity.y / currentSpeed) * player.speed;
     }
 
     // JUMP BUFFER INPUT
@@ -95,21 +96,45 @@ int main(void) {
       player.jumpBufferTimer = player.jumpBufferTime;
     }
 
-    // APPLY JUMP FORCE (with buffer)
+    // ------------------- PHYSICS -------------------
+
+    // FRICTION
+    player.velocity.x *= (1.0f - player.friction * deltaTime);
+    player.velocity.y *= (1.0f - player.friction * deltaTime);
+
+    // GRAVITY
+    if (camera.position.y > player.height) {
+      player.velocity.z -= world.gravity * deltaTime;
+    }
+
+    // FLOOR COLLISION
+    if (camera.position.y <= player.height) {
+      camera.position.y = player.height;
+      player.velocity.z = 0;
+    }
+
+    // SPEED CLAMP
+    float currentSpeed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
+    if (currentSpeed > player.speed) {
+      player.velocity.x = (player.velocity.x / currentSpeed) * player.speed;
+      player.velocity.y = (player.velocity.y / currentSpeed) * player.speed;
+    }
+
+    // JUMP EXECUTION
     bool onGround = camera.position.y <= player.height;
     if (player.jumpBufferTimer > 0 && onGround) {
       player.velocity.z = player.speed + 20.0f;
       player.jumpBufferTimer = 0;
     }
 
-    // DECREMENT JUMP BUFFER
+    // BUFFER COUNTDOWN
     if (player.jumpBufferTimer > 0) {
       player.jumpBufferTimer -= deltaTime;
     }
 
     float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
     float targetFov = 60.0f + (speed * 1.5f);
-    camera.fovy = Lerp(camera.fovy, targetFov, 8.0f * deltaTime);
+    camera.fovy = Lerp(camera.fovy, targetFov, 4.0f * deltaTime);
 
 
     UpdateCameraPro(&camera,
@@ -127,17 +152,18 @@ int main(void) {
 
     ClearBackground(RAYWHITE);
     BeginMode3D(camera);
+
+    player.drawArms(camera);
+
     DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
     DrawGrid(20, 1.0f);
-    DrawCube((Vector3){0, 1, -5}, 2, 2, 2, RED);
-
 
 
     EndMode3D();
 
     EndDrawing();
   }
-
+  UnloadModel(player.armModel);
   CloseWindow();
   return 0;
 }
