@@ -41,6 +41,9 @@ public:
   }
 };
 
+Model catModel;
+Vector3 catPos = {8.0f, 3.0f, 6.0f};
+
 Player player;
 
 // ------------------ HELPERS (MOVE TO A HEADER LIB LATER) -------------------
@@ -60,6 +63,7 @@ void init() {
 
   // load arm 3d model
   player.armModel = LoadModel("Assets/Arms.obj");
+  catModel = LoadModel("Assets/Mesh_Cat.obj");
 
   camera.position = (Vector3){0.0f, 2.0f, 4.0f};
   camera.target = (Vector3){0.0f, 2.0f, 0.0f};
@@ -70,6 +74,7 @@ void init() {
   DisableCursor();
   SetTargetFPS(60);
 }
+
 
 // ---------------------------------------------------------------------------
 
@@ -157,6 +162,11 @@ int main(void) {
 
     DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
     DrawGrid(20, 1.0f);
+    DrawModel(catModel, catPos, 0.1f, WHITE);
+    BoundingBox catBox = GetModelBoundingBox(catModel);
+    catBox.min = Vector3Add(Vector3Scale(catBox.min, 0.1f), catPos);
+    catBox.max = Vector3Add(Vector3Scale(catBox.max, 0.1f), catPos);
+    DrawBoundingBox(catBox, GREEN);
 
 
     EndMode3D();
@@ -164,6 +174,7 @@ int main(void) {
     EndDrawing();
   }
   UnloadModel(player.armModel);
+  UnloadModel(catModel);
   CloseWindow();
   return 0;
 }
