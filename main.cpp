@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "raymath.h"
+#include <float.h>
 
 class World {
 public:
@@ -7,23 +8,85 @@ public:
 };
 
 World world;
+
+class StaticBody {
+public:
+  Model model;
+  Vector3 position = {0, 0, 0};
+  Vector3 scale = {1, 1, 1};
+  BoundingBox aabb;
+
+  void updateAABB() {
+    BoundingBox box = GetModelBoundingBox(model);
+
+    Vector3 corners[8] = {
+        {box.min.x, box.min.y, box.min.z},
+        {box.max.x, box.min.y, box.min.z},
+        {box.min.x, box.max.y, box.min.z},
+        {box.max.x, box.max.y, box.min.z},
+        {box.min.x, box.min.y, box.max.z},
+        {box.max.x, box.min.y, box.max.z},
+        {box.min.x, box.max.y, box.max.z},
+        {box.max.x, box.max.y, box.max.z}};
+
+    for (int i = 0; i < 8; i++) {
+      corners[i].x *= scale.x;
+      corners[i].y *= scale.y;
+      corners[i].z *= scale.z;
+      corners[i] = Vector3Add(corners[i], position);
+    }
+
+    Vector3 newMin = {FLT_MAX, FLT_MAX, FLT_MAX};
+    Vector3 newMax = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
+
+    for (int i = 0; i < 8; i++) {
+      if (corners[i].x < newMin.x)
+        newMin.x = corners[i].x;
+      if (corners[i].y < newMin.y)
+        newMin.y = corners[i].y;
+      if (corners[i].z < newMin.z)
+        newMin.z = corners[i].z;
+      if (corners[i].x > newMax.x)
+        newMax.x = corners[i].x;
+      if (corners[i].y > newMax.y)
+        newMax.y = corners[i].y;
+      if (corners[i].z > newMax.z)
+        newMax.z = corners[i].z;
+    }
+
+    aabb = (BoundingBox){newMin, newMax};
+  }
+
+  void draw() {
+    DrawModelEx(model, position, (Vector3){0, 1, 0}, 0, scale, WHITE);
+  }
+};
+
 class Player {
 public:
   float speed = 25.0f;
   float acceleration = 200.0f;
   float friction = 5.0f;
-  float height = 1.8f;
+  float height = 0.8f;
+  float width = 0.5f;
+  float depth = 0.5f;
   float jumpBufferTime = 0.20f;
   float jumpBufferTimer = 0.0f;
 
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
   Model armModel;
+  BoundingBox aabb;
 
   struct ArmConfig {
     float dist = 0.8f;
     float height = -2.8f;
     float width = 4.5f;
   } armConfig;
+
+  void updateAABB(Vector3 position) {
+    aabb.min = (Vector3){position.x - width / 2, position.y - height, position.z - depth / 2};
+    aabb.max = (Vector3){position.x + width / 2, position.y, position.z + depth / 2};
+  }
 
   void drawArms(Camera3D camera) {
     Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
@@ -41,12 +104,9 @@ public:
   }
 };
 
-Model catModel;
-Vector3 catPos = {8.0f, 3.0f, 6.0f};
+StaticBody cat;
 
 Player player;
-
-// ------------------ HELPERS (MOVE TO A HEADER LIB LATER) -------------------
 
 Camera3D camera = {0};
 float mouseSensitivity = 0.15f;
@@ -61,14 +121,16 @@ inline Vector2 getKeyVector() {
 void init() {
   InitWindow(800, 450, "THE LUCKY NEVER DIE");
 
-  // load arm 3d model
   player.armModel = LoadModel("Assets/Arms.obj");
-  catModel = LoadModel("Assets/Mesh_Cat.obj");
+  cat.model = LoadModel("Assets/Mesh_Cat.obj");
+  cat.position = (Vector3){8.0f, 3.0f, 6.0f};
+  cat.scale = (Vector3){0.1f, 0.1f, 0.1f};
+  cat.updateAABB();
 
   camera.position = (Vector3){0.0f, 2.0f, 4.0f};
   camera.target = (Vector3){0.0f, 2.0f, 0.0f};
   camera.up = (Vector3){0.0f, 1.0f, 0.0f};
-  camera.fovy = 60.0f;
+  camera.fovy = 210.0f;
   camera.projection = CAMERA_PERSPECTIVE;
 
   DisableCursor();
@@ -139,7 +201,7 @@ int main(void) {
 
     float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
     float targetFov = 60.0f + (speed * 1.5f);
-    camera.fovy = Lerp(camera.fovy, targetFov, 4.0f * deltaTime);
+    camera.fovy = Lerp(camera.fovy, targetFov, 2.0f * deltaTime);
 
 
     UpdateCameraPro(&camera,
@@ -153,28 +215,26 @@ int main(void) {
 
     BeginDrawing();
 
-
-
     ClearBackground(RAYWHITE);
     BeginMode3D(camera);
 
     player.drawArms(camera);
 
+    player.updateAABB(camera.position);
+
     DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
     DrawGrid(20, 1.0f);
-    DrawModel(catModel, catPos, 0.1f, WHITE);
-    BoundingBox catBox = GetModelBoundingBox(catModel);
-    catBox.min = Vector3Add(Vector3Scale(catBox.min, 0.1f), catPos);
-    catBox.max = Vector3Add(Vector3Scale(catBox.max, 0.1f), catPos);
-    DrawBoundingBox(catBox, GREEN);
 
+    cat.draw();
+    DrawBoundingBox(cat.aabb, GREEN);
+    DrawBoundingBox(player.aabb, RED);
 
     EndMode3D();
 
     EndDrawing();
   }
   UnloadModel(player.armModel);
-  UnloadModel(catModel);
+  UnloadModel(cat.model);
   CloseWindow();
   return 0;
 }
