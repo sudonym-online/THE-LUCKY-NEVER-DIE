@@ -1,8 +1,8 @@
+#include "include/game.h"
+#include "include/input.h"
+#include "include/physics.h"
 #include "raylib.h"
 #include "raymath.h"
-#include "include/game.h"
-#include "include/physics.h"
-#include "include/input.h"
 
 World world;
 StaticBody cats[5];
@@ -46,13 +46,7 @@ int main(void) {
 
     inputProcess(deltaTime, player);
 
-    // ------------------- PHYSICS -------------------
-
-    physicsProcess(deltaTime, player, world, camera);
-
-    float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
-    float targetFov = 60.0f + (speed * 1.5f);
-    camera.fovy = Lerp(camera.fovy, targetFov, 2.0f * deltaTime);
+    // ------------------- MOVEMENT -------------------
 
     UpdateCameraPro(&camera,
                     (Vector3){
@@ -63,14 +57,16 @@ int main(void) {
                               deltaMouse.y * mouseSensitivity, 0.0f},
                     0.0f);
 
-    player.updateAABB(camera.position);
-    bool colliding = false;
-    for (int i = 0; i < 5; i++) {
-      if (CheckCollisionBoxes(player.aabb, cats[i].aabb)) {
-        colliding = true;
-        break;
-      }
-    }
+    // ------------------- PHYSICS & COLLISION -------------------
+
+    int hitCount = physicsProcess(deltaTime, player, world, camera, cats, 5);
+    bool colliding = hitCount > 0;
+
+    float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
+    float targetFov = 60.0f + (speed * 1.5f);
+    camera.fovy = Lerp(camera.fovy, targetFov, 2.0f * deltaTime);
+
+    // ------------------- DRAWING -------------------
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
@@ -98,6 +94,8 @@ int main(void) {
 
     EndDrawing();
   }
+
+  // ------------------- CLEANUP -------------------
 
   UnloadModel(player.armModel);
   UnloadModel(catModel);
