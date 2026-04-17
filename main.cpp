@@ -4,7 +4,7 @@
 
 class World {
 public:
-  float gravity = 75.0f;
+  float gravity = 110.0f;
 };
 
 World world;
@@ -14,6 +14,7 @@ public:
   Model model;
   Vector3 position = {0, 0, 0};
   Vector3 scale = {1, 1, 1};
+  float rotation = 0.0f;
   BoundingBox aabb;
 
   void updateAABB() {
@@ -33,6 +34,8 @@ public:
       corners[i].x *= scale.x;
       corners[i].y *= scale.y;
       corners[i].z *= scale.z;
+
+      corners[i] = Vector3RotateByAxisAngle(corners[i], (Vector3){0, 1, 0}, rotation * DEG2RAD);
       corners[i] = Vector3Add(corners[i], position);
     }
 
@@ -58,18 +61,18 @@ public:
   }
 
   void draw() {
-    DrawModelEx(model, position, (Vector3){0, 1, 0}, 0, scale, WHITE);
+    DrawModelEx(model, position, (Vector3){0, 1, 0}, rotation, scale, WHITE);
   }
 };
 
 class Player {
 public:
-  float speed = 25.0f;
-  float acceleration = 200.0f;
+  float speed = 55.0f;
+  float acceleration = 240.0f;
   float friction = 5.0f;
-  float height = 0.8f;
-  float width = 0.5f;
-  float depth = 0.5f;
+  float height = 5.8f;
+  float width = 1.5f;
+  float depth = 1.5f;
   float jumpBufferTime = 0.20f;
   float jumpBufferTimer = 0.0f;
 
@@ -104,7 +107,8 @@ public:
   }
 };
 
-StaticBody cat;
+StaticBody cats[5];
+Model catModel;
 
 Player player;
 
@@ -122,10 +126,15 @@ void init() {
   InitWindow(800, 450, "THE LUCKY NEVER DIE");
 
   player.armModel = LoadModel("Assets/Arms.obj");
-  cat.model = LoadModel("Assets/Mesh_Cat.obj");
-  cat.position = (Vector3){8.0f, 3.0f, 6.0f};
-  cat.scale = (Vector3){0.1f, 0.1f, 0.1f};
-  cat.updateAABB();
+  catModel = LoadModel("Assets/Mesh_Cat.obj");
+
+  for (int i = 0; i < 5; i++) {
+    cats[i].model = catModel;
+    cats[i].position = (Vector3){(float)GetRandomValue(-20, 20), 0.0f, (float)GetRandomValue(-20, 20)};
+    cats[i].rotation = (float)GetRandomValue(0, 360);
+    cats[i].scale = (Vector3){0.1f, 0.1f, 0.1f};
+    cats[i].updateAABB();
+  }
 
   camera.position = (Vector3){0.0f, 2.0f, 4.0f};
   camera.target = (Vector3){0.0f, 2.0f, 0.0f};
@@ -137,11 +146,7 @@ void init() {
   SetTargetFPS(60);
 }
 
-
-// ---------------------------------------------------------------------------
-
 int main(void) {
-
   init();
 
   while (!WindowShouldClose()) {
@@ -203,7 +208,6 @@ int main(void) {
     float targetFov = 60.0f + (speed * 1.5f);
     camera.fovy = Lerp(camera.fovy, targetFov, 2.0f * deltaTime);
 
-
     UpdateCameraPro(&camera,
                     (Vector3){
                         player.velocity.x * deltaTime,
@@ -213,28 +217,44 @@ int main(void) {
                               deltaMouse.y * mouseSensitivity, 0.0f},
                     0.0f);
 
-    BeginDrawing();
+    player.updateAABB(camera.position);
+    bool colliding = false;
+    for (int i = 0; i < 5; i++) {
+      if (CheckCollisionBoxes(player.aabb, cats[i].aabb)) {
+        colliding = true;
+        break;
+      }
+    }
 
+    BeginDrawing();
     ClearBackground(RAYWHITE);
     BeginMode3D(camera);
 
     player.drawArms(camera);
 
-    player.updateAABB(camera.position);
-
     DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
     DrawGrid(20, 1.0f);
 
-    cat.draw();
-    DrawBoundingBox(cat.aabb, GREEN);
+    for (int i = 0; i < 5; i++) {
+      cats[i].draw();
+      DrawBoundingBox(cats[i].aabb, GREEN);
+    }
+
     DrawBoundingBox(player.aabb, RED);
 
     EndMode3D();
 
+    if (colliding) {
+      DrawText("COLLISION DETECTED", 10, 10, 20, RED);
+    } else {
+      DrawText("NO COLLISION", 10, 10, 20, GREEN);
+    }
+
     EndDrawing();
   }
+
   UnloadModel(player.armModel);
-  UnloadModel(cat.model);
+  UnloadModel(catModel);
   CloseWindow();
   return 0;
 }
