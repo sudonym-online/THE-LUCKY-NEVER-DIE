@@ -28,7 +28,7 @@ void init() {
   camera.position = (Vector3){0.0f, 2.0f, 4.0f};
   camera.target = (Vector3){0.0f, 2.0f, 0.0f};
   camera.up = (Vector3){0.0f, 1.0f, 0.0f};
-  camera.fovy = 210.0f;
+  camera.fovy = 90.0f;
   camera.projection = CAMERA_PERSPECTIVE;
 
   DisableCursor();
@@ -85,6 +85,8 @@ int main(void) {
     DrawBoundingBox(player.aabb, RED);
 
     EndMode3D();
+
+    // ------------------- UI -------------------
 
     if (colliding) {
       DrawText("COLLISION DETECTED", 10, 10, 20, RED);

@@ -7,15 +7,14 @@ void applyFriction(float deltaTime, Player &player) {
 }
 
 void applyGravity(float deltaTime, Player &player, World &world, Camera3D &camera) {
-  if (camera.position.y > player.height) {
-    player.velocity.z -= world.gravity * deltaTime;
-  }
+  player.velocity.z -= world.gravity * deltaTime;
 }
 
 void floorCheck(Player &player, Camera3D &camera) {
   if (camera.position.y <= player.height) {
     camera.position.y = player.height;
-    player.velocity.z = 0;
+    if (player.velocity.z < 0)
+      player.velocity.z = 0;
   }
 }
 
@@ -28,9 +27,9 @@ void speedCheck(Player &player) {
 }
 
 void applyJump(Player &player, Camera3D &camera) {
-  bool onGround = camera.position.y <= player.height;
+  bool onGround = camera.position.y <= player.height + 0.01f;
   if (player.jumpBufferTimer > 0 && onGround) {
-    player.velocity.z = player.speed + 20.0f;
+    player.velocity.z = 55.0f;
     player.jumpBufferTimer = 0;
   }
 }
@@ -57,22 +56,34 @@ void resolveCollision(Player &player, Camera3D &camera, StaticBody &body) {
   float overlapZ = fmin(player.aabb.max.z, body.aabb.max.z) - fmax(player.aabb.min.z, body.aabb.min.z);
 
   if (overlapX < overlapY && overlapX < overlapZ) {
-    if (player.aabb.min.x < body.aabb.min.x)
+    if (player.aabb.min.x < body.aabb.min.x) {
       camera.position.x -= overlapX;
-    else
+      player.velocity.x = 0;
+    } else {
       camera.position.x += overlapX;
+      player.velocity.x = 0;
+    }
   } else if (overlapZ < overlapX && overlapZ < overlapY) {
-    if (player.aabb.min.z < body.aabb.min.z)
+    if (player.aabb.min.z < body.aabb.min.z) {
       camera.position.z -= overlapZ;
-    else
+      player.velocity.z = 0;
+    } else {
       camera.position.z += overlapZ;
+      player.velocity.z = 0;
+    }
   } else {
-    if (player.aabb.min.y < body.aabb.min.y)
+    if (player.aabb.min.y < body.aabb.min.y) {
       camera.position.y -= overlapY;
-    else
+      player.velocity.y = 0;
+    } else {
       camera.position.y += overlapY;
-    player.velocity.z = 0;
+      player.velocity.y = 0;
+    }
   }
+
+  // TODO : Add resoving for collings on top of surface.
+  // TODO : Stop camera from adusting when colliding with surface.
+  // TODO : Separate collison resolution by camera and by velocity.
 
   player.updateAABB(camera.position);
 }
