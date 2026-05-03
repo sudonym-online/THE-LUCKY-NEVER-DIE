@@ -13,6 +13,7 @@ void applyGravity(float deltaTime, Player &player, World &world) {
 void floorCheck(Player &player) {
   if (player.position.y <= 0.0f) {
     player.position.y = 0.0f;
+    player.isGrounded = true;
     if (player.velocity.y < 0)
       player.velocity.y = 0;
   }
@@ -27,8 +28,7 @@ void speedCheck(Player &player) {
 }
 
 void applyJump(Player &player) {
-  bool onGround = player.position.y <= 0.01f;
-  if (player.jumpBufferTimer > 0 && onGround) {
+  if (player.jumpBufferTimer > 0 && player.isGrounded) {
     player.velocity.y = 55.0f;
     player.jumpBufferTimer = 0;
   }
@@ -73,16 +73,22 @@ void resolveCollision(Player &player, StaticBody &body) {
   } else {
     if (player.aabb.min.y < body.aabb.min.y) {
       player.position.y -= overlapY;
+      if (player.velocity.y > 0)
+        player.velocity.y = 0;
     } else {
       player.position.y += overlapY;
+      if (player.velocity.y < 0)
+        player.velocity.y = 0;
+      player.isGrounded = true;
     }
-    player.velocity.y = 0;
   }
 
   player.updateAABB();
 }
 
 int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera, StaticBody allBodies[], int bodyCount) {
+  player.isGrounded = false;
+
   applyFriction(deltaTime, player);
   applyGravity(deltaTime, player, world);
 
@@ -92,8 +98,6 @@ int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &came
 
   floorCheck(player);
   speedCheck(player);
-  applyJump(player);
-  bufferCountdown(deltaTime, player);
 
   player.updateAABB();
 
@@ -104,6 +108,9 @@ int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &came
       resolveCollision(player, *player.collidingBodies[i]);
     }
   }
+
+  applyJump(player);
+  bufferCountdown(deltaTime, player);
 
   Vector3 newCamPos = (Vector3){player.position.x, player.position.y + player.height, player.position.z};
   Vector3 moveDiff = Vector3Subtract(newCamPos, camera.position);

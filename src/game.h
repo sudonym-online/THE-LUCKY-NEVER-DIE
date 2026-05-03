@@ -73,6 +73,7 @@ public:
 
   StaticBody *collidingBodies[16];
   int collidingCount = 0;
+  bool isGrounded;
 
   struct ArmConfig {
     float dist = 0.8f;
