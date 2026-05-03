@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++20 -Wall -Wextra -Iinclude -Iraylib/src
+CXXFLAGS = -std=c++20 -Wall -Wextra -Isrc -Iraylib/src
 LDFLAGS = -Lraylib/build/raylib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lXcursor -lXinerama -lXrandr -lXi
 
 SRC = main.cpp src/input.cpp src/physics.cpp

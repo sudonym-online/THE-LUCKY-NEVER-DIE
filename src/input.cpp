@@ -1,4 +1,4 @@
-#include "../include/input.h"
+#include "input.h"
 
 Vector2 getKeyVector() {
   return (Vector2){
@@ -7,18 +7,25 @@ Vector2 getKeyVector() {
   };
 }
 
-void inputProcess(float deltaTime, Player &player) {
-    Vector2 keyVector = getKeyVector();
+void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
+  Vector2 keyVector = getKeyVector();
 
-    // MOVEMENT INPUT
-    if (Vector2Length(keyVector) > 0) {
-      Vector2 inputDir = Vector2Normalize(keyVector);
-      player.velocity.x += inputDir.x * player.acceleration * deltaTime;
-      player.velocity.y += inputDir.y * player.acceleration * deltaTime;
-    }
+  if (Vector2Length(keyVector) > 0) {
+    Vector3 forward = Vector3Subtract(camera.target, camera.position);
+    forward.y = 0;
+    forward = Vector3Normalize(forward);
+    Vector3 right = Vector3CrossProduct(forward, camera.up);
+    Vector2 inputDir = Vector2Normalize(keyVector);
 
-    // JUMP BUFFER INPUT
-    if (IsKeyPressed(KEY_SPACE)) {
-      player.jumpBufferTimer = player.jumpBufferTime;
-    }
+    Vector3 moveDir = Vector3Add(
+        Vector3Scale(forward, inputDir.x),
+        Vector3Scale(right, inputDir.y));
+
+    player.velocity.x += moveDir.x * player.acceleration * deltaTime;
+    player.velocity.z += moveDir.z * player.acceleration * deltaTime;
+  }
+
+  if (IsKeyPressed(KEY_SPACE)) {
+    player.jumpBufferTimer = player.jumpBufferTime;
+  }
 }

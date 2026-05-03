@@ -1,0 +1,13 @@
+# Binaries
+main
+main.exe
+
+# Objects
+*.o
+
+# Libraries
+raylib/
+
+# Temporary files
+.DS_Store
+*.tmp

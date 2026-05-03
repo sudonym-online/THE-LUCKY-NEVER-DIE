@@ -1,8 +1,8 @@
-#include "include/game.h"
-#include "include/input.h"
-#include "include/physics.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "src/game.h"
+#include "src/input.h"
+#include "src/physics.h"
 
 World world;
 StaticBody cats[5];
@@ -10,6 +10,7 @@ Model catModel;
 Player player;
 Camera3D camera = {0};
 float mouseSensitivity = 0.15f;
+bool debug = true;
 
 void init() {
   InitWindow(800, 450, "THE LUCKY NEVER DIE");
@@ -25,7 +26,10 @@ void init() {
     cats[i].updateAABB();
   }
 
-  camera.position = (Vector3){0.0f, 2.0f, 4.0f};
+  player.position = (Vector3){0.0f, 0.0f, 4.0f};
+  player.updateAABB();
+
+  camera.position = (Vector3){player.position.x, player.position.y + player.height, player.position.z};
   camera.target = (Vector3){0.0f, 2.0f, 0.0f};
   camera.up = (Vector3){0.0f, 1.0f, 0.0f};
   camera.fovy = 90.0f;
@@ -44,27 +48,24 @@ int main(void) {
 
     // ------------------- INPUT -------------------
 
-    inputProcess(deltaTime, player);
+    inputProcess(deltaTime, player, camera);
 
     // ------------------- MOVEMENT -------------------
 
     UpdateCameraPro(&camera,
-                    (Vector3){
-                        player.velocity.x * deltaTime,
-                        player.velocity.y * deltaTime,
-                        player.velocity.z * deltaTime},
+                    (Vector3){0, 0, 0},
                     (Vector3){deltaMouse.x * mouseSensitivity,
                               deltaMouse.y * mouseSensitivity, 0.0f},
                     0.0f);
 
     // ------------------- PHYSICS & COLLISION -------------------
 
-    int hitCount = physicsProcess(deltaTime, player, world, camera, cats, 5);
-    bool colliding = hitCount > 0;
+    physicsProcess(deltaTime, player, world, camera, cats, 5);
+    bool colliding = player.collidingCount > 0;
 
-    float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.y});
+    float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.z});
     float targetFov = 60.0f + (speed * 1.5f);
-    camera.fovy = Lerp(camera.fovy, targetFov, 2.0f * deltaTime);
+    camera.fovy = Lerp(camera.fovy, targetFov, 5.0f * deltaTime);
 
     // ------------------- DRAWING -------------------
 
@@ -75,14 +76,17 @@ int main(void) {
     player.drawArms(camera);
 
     DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
-    DrawGrid(20, 1.0f);
+    DrawGrid(0, 1.0f);
 
     for (int i = 0; i < 5; i++) {
       cats[i].draw();
-      DrawBoundingBox(cats[i].aabb, GREEN);
+      if (debug) {
+        DrawBoundingBox(cats[i].aabb, GREEN);
+      }
     }
-
-    DrawBoundingBox(player.aabb, RED);
+    if (debug) {
+      DrawBoundingBox(player.aabb, RED);
+    }
 
     EndMode3D();
 
