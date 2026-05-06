@@ -1,2 +1,5 @@
 # THE-LUCKY-NEVER-DIE
-yeah
+
+a game about not dying
+
+more to come
