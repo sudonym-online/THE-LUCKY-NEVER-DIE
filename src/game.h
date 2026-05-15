@@ -57,8 +57,8 @@ public:
   Vector3 velocity = {0.0f, 0.0f, 0.0f};
 
   float speed = 50.0f;
-  float acceleration = 520.0f;
-  float friction = 8.0f;
+  float acceleration = 320.0f;
+  float friction = 3.5f;
 
   float height = 5.0f;
   float bodyHeight = height + 0.5f;

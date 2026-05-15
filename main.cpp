@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "raymath.h"
+#include "rlgl.h"
 #include "src/game.h"
 #include "src/input.h"
 #include "src/physics.h"
@@ -8,12 +9,14 @@ World world;
 StaticBody cats[5];
 Model catModel;
 Player player;
+
 Camera3D camera = {0};
 float mouseSensitivity = 0.15f;
 bool debug = true;
+Vector2 windowSize = {800, 450};
 
 void init() {
-  InitWindow(800, 450, "THE LUCKY NEVER DIE");
+  InitWindow(windowSize.x, windowSize.y, "THE LUCKY NEVER DIE");
 
   player.armModel = LoadModel("Assets/Arms.obj");
   catModel = LoadModel("Assets/Mesh_Cat.obj");
@@ -47,11 +50,9 @@ int main(void) {
     float deltaTime = GetFrameTime();
 
     // ------------------- INPUT -------------------
-
     inputProcess(deltaTime, player, camera);
 
     // ------------------- MOVEMENT -------------------
-
     UpdateCameraPro(&camera,
                     (Vector3){0, 0, 0},
                     (Vector3){deltaMouse.x * mouseSensitivity,
@@ -59,7 +60,6 @@ int main(void) {
                     0.0f);
 
     // ------------------- PHYSICS & COLLISION -------------------
-
     physicsProcess(deltaTime, player, world, camera, cats, 5);
     bool colliding = player.collidingCount > 0;
 
@@ -68,30 +68,35 @@ int main(void) {
     camera.fovy = Lerp(camera.fovy, targetFov, 5.0f * deltaTime);
 
     // ------------------- DRAWING -------------------
-
     BeginDrawing();
     ClearBackground(RAYWHITE);
+
+    // -- BOTTOM LAYER --
     BeginMode3D(camera);
+        DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
+        DrawGrid(0, 1.0f);
 
-    player.drawArms(camera);
+        for (int i = 0; i < 5; i++) {
+            cats[i].draw();
+            if (debug) {
+                DrawBoundingBox(cats[i].aabb, GREEN);
+            }
+        }
+        if (debug) {
+            DrawBoundingBox(player.aabb, RED);
+        }
+    EndMode3D();
 
-    DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
-    DrawGrid(0, 1.0f);
+    rlColorMask(false, false, false, false);
+    rlClearScreenBuffers();
+    rlColorMask(true, true, true, true);
 
-    for (int i = 0; i < 5; i++) {
-      cats[i].draw();
-      if (debug) {
-        DrawBoundingBox(cats[i].aabb, GREEN);
-      }
-    }
-    if (debug) {
-      DrawBoundingBox(player.aabb, RED);
-    }
-
+    // -- TOP LAYER --
+    BeginMode3D(camera);
+        player.drawArms(camera);
     EndMode3D();
 
     // ------------------- UI -------------------
-
     if (colliding) {
       DrawText("COLLISION DETECTED", 10, 10, 20, RED);
     } else {
@@ -102,7 +107,6 @@ int main(void) {
   }
 
   // ------------------- CLEANUP -------------------
-
   UnloadModel(player.armModel);
   UnloadModel(catModel);
   CloseWindow();
