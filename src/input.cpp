@@ -1,4 +1,5 @@
 #include "input.h"
+#include "raymath.h"
 
 Vector2 getKeyVector() {
   return (Vector2){
@@ -21,11 +22,11 @@ void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
         Vector3Scale(forward, inputDir.x),
         Vector3Scale(right, inputDir.y));
 
-    player.velocity.x += moveDir.x * player.acceleration * deltaTime;
-    player.velocity.z += moveDir.z * player.acceleration * deltaTime;
+    player.move.velocity.x += moveDir.x * player.move.acceleration * deltaTime;
+    player.move.velocity.z += moveDir.z * player.move.acceleration * deltaTime;
   }
 
   if (IsKeyPressed(KEY_SPACE)) {
-    player.jumpBufferTimer = player.jumpBufferTime;
+    player.jump.bufferTimer = player.jump.bufferTime;
   }
 }

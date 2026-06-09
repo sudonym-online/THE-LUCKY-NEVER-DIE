@@ -18,7 +18,7 @@ Vector2 windowSize = {800, 450};
 void init() {
   InitWindow(windowSize.x, windowSize.y, "THE LUCKY NEVER DIE");
 
-  player.armModel = LoadModel("Assets/Arms.obj");
+  player.vis.armModel = LoadModel("Assets/Arms.obj");
   catModel = LoadModel("Assets/Mesh_Cat.obj");
 
   for (int i = 0; i < 5; i++) {
@@ -32,7 +32,7 @@ void init() {
   player.position = (Vector3){0.0f, 0.0f, 4.0f};
   player.updateAABB();
 
-  camera.position = (Vector3){player.position.x, player.position.y + player.height, player.position.z};
+  camera.position = (Vector3){player.position.x, player.position.y + player.col.height, player.position.z};
   camera.target = (Vector3){0.0f, 2.0f, 0.0f};
   camera.up = (Vector3){0.0f, 1.0f, 0.0f};
   camera.fovy = 90.0f;
@@ -61,9 +61,9 @@ int main(void) {
 
     // ------------------- PHYSICS & COLLISION -------------------
     physicsProcess(deltaTime, player, world, camera, cats, 5);
-    bool colliding = player.collidingCount > 0;
+    bool colliding = player.col.bodyCount > 0;
 
-    float speed = Vector2Length((Vector2){player.velocity.x, player.velocity.z});
+    float speed = Vector2Length((Vector2){player.move.velocity.x, player.move.velocity.z});
     float targetFov = 60.0f + (speed * 1.5f);
     camera.fovy = Lerp(camera.fovy, targetFov, 5.0f * deltaTime);
 
@@ -71,7 +71,7 @@ int main(void) {
     BeginDrawing();
     ClearBackground(RAYWHITE);
 
-    // -- BOTTOM LAYER --
+    // ---- BOTTOM LAYER ----
     BeginMode3D(camera);
         DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
         DrawGrid(0, 1.0f);
@@ -83,7 +83,7 @@ int main(void) {
             }
         }
         if (debug) {
-            DrawBoundingBox(player.aabb, RED);
+            DrawBoundingBox(player.col.aabb, RED);
         }
     EndMode3D();
 
@@ -91,7 +91,7 @@ int main(void) {
     rlClearScreenBuffers();
     rlColorMask(true, true, true, true);
 
-    // -- TOP LAYER --
+    // ---- TOP LAYER ----
     BeginMode3D(camera);
         player.drawArms(camera);
     EndMode3D();
@@ -107,7 +107,7 @@ int main(void) {
   }
 
   // ------------------- CLEANUP -------------------
-  UnloadModel(player.armModel);
+  UnloadModel(player.vis.armModel);
   UnloadModel(catModel);
   CloseWindow();
   return 0;

@@ -11,3 +11,9 @@ raylib/
 # Temporary files
 .DS_Store
 *.tmp
+
+#Agents
+AGENTS.md
+
+#other idk
+.idea/
