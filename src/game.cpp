@@ -41,9 +41,9 @@ void StaticBody::draw() {
 }
 
 void Player::updateAABB() {
-  float bodyHeight = col.height + 0.5f;
-  col.aabb.min = (Vector3){position.x - col.width / 2, position.y, position.z - col.depth / 2};
-  col.aabb.max = (Vector3){position.x + col.width / 2, position.y + bodyHeight, position.z + col.depth / 2};
+  float bodyHeight = collision.height + 0.5f;
+  collision.aabb.min = (Vector3){position.x - collision.width / 2, position.y, position.z - collision.depth / 2};
+  collision.aabb.max = (Vector3){position.x + collision.width / 2, position.y + bodyHeight, position.z + collision.depth / 2};
 }
 
 void Player::UpdateModelOrientation(Model *model, Camera3D camera) {
@@ -63,15 +63,15 @@ void Player::drawArms(Camera3D camera) {
   Vector3 forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
   Vector3 right = Vector3Normalize(Vector3CrossProduct((Vector3){0, 1, 0}, forward));
 
-  Vector3 baseOffset = Vector3Add(Vector3Scale(forward, vis.armConfig.dist),
-                                  Vector3Scale((Vector3){0, 1, 0}, vis.armConfig.height));
+  Vector3 baseOffset = Vector3Add(Vector3Scale(forward, visual.armConfig.dist),
+                                  Vector3Scale((Vector3){0, 1, 0}, visual.armConfig.height));
   Vector3 leftArmPos = Vector3Add(camera.position,
-                                  Vector3Add(baseOffset, Vector3Scale(right, -vis.armConfig.width)));
+                                  Vector3Add(baseOffset, Vector3Scale(right, -visual.armConfig.width)));
   Vector3 rightArmPos = Vector3Add(camera.position,
-                                   Vector3Add(baseOffset, Vector3Scale(right, vis.armConfig.width)));
+                                   Vector3Add(baseOffset, Vector3Scale(right, visual.armConfig.width)));
 
-  UpdateModelOrientation(&vis.armModel, camera);
+  UpdateModelOrientation(&visual.armModel, camera);
 
-  DrawModelEx(vis.armModel, leftArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED);
-  DrawModelEx(vis.armModel, rightArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED);
+  DrawModelEx(visual.armModel, leftArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED);
+  DrawModelEx(visual.armModel, rightArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED);
 }

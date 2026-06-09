@@ -22,8 +22,8 @@ void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
         Vector3Scale(forward, inputDir.x),
         Vector3Scale(right, inputDir.y));
 
-    player.move.velocity.x += moveDir.x * player.move.acceleration * deltaTime;
-    player.move.velocity.z += moveDir.z * player.move.acceleration * deltaTime;
+    player.movement.velocity.x += moveDir.x * player.movement.acceleration * deltaTime;
+    player.movement.velocity.z += moveDir.z * player.movement.acceleration * deltaTime;
   }
 
   if (IsKeyPressed(KEY_SPACE)) {

@@ -21,7 +21,7 @@ public:
     float speed = 50.0f;
     float acceleration = 320.0f;
     float friction = 3.5f;
-  } move;
+  } movement;
 
   struct Collision {
     float height = 5.0f;
@@ -31,7 +31,7 @@ public:
     StaticBody *bodies[16];
     int bodyCount = 0;
     bool grounded = false;
-  } col;
+  } collision;
 
   struct Jump {
     float bufferTime = 0.2f;
@@ -45,7 +45,7 @@ public:
       float height = -2.8f;
       float width = 4.5f;
     } armConfig;
-  } vis;
+  } visual;
 
   Vector3 position = {0.0f, 0.0f, 0.0f};
 
