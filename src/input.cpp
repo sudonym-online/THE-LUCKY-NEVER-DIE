@@ -2,31 +2,31 @@
 #include "raymath.h"
 
 Vector2 getKeyVector() {
-  return (Vector2){
-      (float)IsKeyDown(KEY_W) - (float)IsKeyDown(KEY_S),
-      (float)IsKeyDown(KEY_D) - (float)IsKeyDown(KEY_A),
-  };
+	return (Vector2){
+			(float)IsKeyDown(KEY_W) - (float)IsKeyDown(KEY_S),
+			(float)IsKeyDown(KEY_D) - (float)IsKeyDown(KEY_A),
+	};
 }
 
 void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
-  Vector2 keyVector = getKeyVector();
+	Vector2 keyVector = getKeyVector();
 
-  if (Vector2Length(keyVector) > 0) {
-    Vector3 forward = Vector3Subtract(camera.target, camera.position);
-    forward.y = 0;
-    forward = Vector3Normalize(forward);
-    Vector3 right = Vector3CrossProduct(forward, camera.up);
-    Vector2 inputDir = Vector2Normalize(keyVector);
+	if (Vector2Length(keyVector) > 0) {
+		Vector3 forward = Vector3Subtract(camera.target, camera.position);
+		forward.y = 0;
+		forward = Vector3Normalize(forward);
+		Vector3 right = Vector3CrossProduct(forward, camera.up);
+		Vector2 inputDir = Vector2Normalize(keyVector);
 
-    Vector3 moveDir = Vector3Add(
-        Vector3Scale(forward, inputDir.x),
-        Vector3Scale(right, inputDir.y));
+		Vector3 moveDir = Vector3Add(
+				Vector3Scale(forward, inputDir.x),
+				Vector3Scale(right, inputDir.y));
 
-    player.movement.velocity.x += moveDir.x * player.movement.acceleration * deltaTime;
-    player.movement.velocity.z += moveDir.z * player.movement.acceleration * deltaTime;
-  }
+		player.movement.velocity.x += moveDir.x * player.movement.acceleration * deltaTime;
+		player.movement.velocity.z += moveDir.z * player.movement.acceleration * deltaTime;
+	}
 
-  if (IsKeyPressed(KEY_SPACE)) {
-    player.jump.bufferTimer = player.jump.bufferTime;
-  }
+	if (IsKeyPressed(KEY_SPACE)) {
+		player.jump.bufferTimer = player.jump.bufferTime;
+	}
 }
