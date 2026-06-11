@@ -14,8 +14,25 @@ struct StaticBody {
 	void draw();
 };
 
+struct Item {
+	int id;
+	const char *name;
+};
+
+struct Attribute {
+	const char *name;
+	auto value;
+};
+
+enum { MAX_ITEMS = 32 };
+
 class Player {
 public:
+	struct Inventory {
+		Item items[MAX_ITEMS];
+		int count = 0;
+	} inventory;
+
 	struct Movement {
 		Vector3 velocity = {0.0f, 0.0f, 0.0f};
 		float speed = 50.0f;

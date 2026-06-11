@@ -1,0 +1,9 @@
+{
+  "type": "weapon",
+  "attributes": {
+    "Ammo": 9,
+    "ReloadTime": 2.0,
+    "Damage": 10,
+    "FireRate": 0.6
+  }
+}
