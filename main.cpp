@@ -4,7 +4,10 @@
 #include "src/game.h"
 #include "src/input.h"
 #include "src/physics.h"
+#include "src/objects.h"
+#include "src/debug.h"
 
+Debug dbg;
 World world;
 StaticBody cats[5];
 Model catModel;
@@ -40,6 +43,19 @@ void init() {
 
 	DisableCursor();
 	SetTargetFPS(60);
+
+	Objects::InitCache();
+
+	dbg.Log("engine initialized");
+	dbg.Log("%d cat(s) spawned", 5);
+
+	// Example usage (uncomment after creating objects/SomeType/some.json):
+	int gunId = Objects::InitObject("Deagle");
+	int ids[8]; int n;
+	const int *result = Objects::Get("type", "weapon", &n);
+	Objects::SetAttr(gunId, "ammo", "24");
+	bool isWeapon = Objects::HasType(gunId, "weapon");
+	dbg.Log("spawned Deagle (id=%d)", gunId);
 }
 
 int main(void) {
@@ -62,6 +78,11 @@ int main(void) {
 		// ------------------- PHYSICS & COLLISION -------------------
 		physicsProcess(deltaTime, player, world, camera, cats, 5);
 		bool colliding = player.collision.bodyCount > 0;
+	static bool wasColliding = false;
+	if (colliding != wasColliding) {
+		dbg.Log(colliding ? "COLLISION ENTER" : "COLLISION EXIT");
+		wasColliding = colliding;
+	}
 
 		float speed = Vector2Length((Vector2){player.movement.velocity.x, player.movement.velocity.z});
 		float targetFov = 60.0f + (speed * 1.5f);
@@ -103,12 +124,15 @@ int main(void) {
 			DrawText("NO COLLISION", 10, 10, 20, GREEN);
 		}
 
+		dbg.Draw();
+
 		EndDrawing();
 	}
 
 	// ------------------- CLEANUP -------------------
 	UnloadModel(player.visual.armModel);
 	UnloadModel(catModel);
+	Objects::UnloadAll();
 	CloseWindow();
 	return 0;
 }

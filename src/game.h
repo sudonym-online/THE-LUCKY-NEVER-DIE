@@ -19,11 +19,6 @@ struct Item {
 	const char *name;
 };
 
-struct Attribute {
-	const char *name;
-	auto value;
-};
-
 enum { MAX_ITEMS = 32 };
 
 class Player {
