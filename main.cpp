@@ -10,15 +10,18 @@
 Debug dbg;
 World world;
 Player player;
+Font uiFont;
 
 Camera3D camera = {0};
 float mouseSensitivity = 0.15f;
 bool debug = true;
-Vector2 windowSize = {800, 450};
+Vector2 windowSize = {1280, 720};
 
 void init() {
 	InitWindow(windowSize.x, windowSize.y, "THE LUCKY NEVER DIE");
 
+	uiFont = LoadFontEx("Assets/Fonts/Iosevka/IosevkaNerdFontMono-Regular.ttf", 256, nullptr, 0);
+	SetTextureFilter(uiFont.texture, TEXTURE_FILTER_BILINEAR);
 	player.visual.armModel = LoadModel("Assets/Arms.obj");
 
 	player.position = (Vector3){0.0f, 0.0f, 4.0f};
@@ -107,17 +110,18 @@ int main(void) {
 
 		// ------------------- UI -------------------
 		if (colliding) {
-			DrawText("COLLISION DETECTED", 10, 10, 20, RED);
+			DrawTextEx(uiFont, "COLLISION DETECTED", (Vector2){10, 10}, 32, 1, RED);
 		} else {
-			DrawText("NO COLLISION", 10, 10, 20, GREEN);
+			DrawTextEx(uiFont, "NO COLLISION", (Vector2){10, 10}, 32, 1, GREEN);
 		}
 
-		dbg.Draw();
+		dbg.Draw(uiFont);
 
 		EndDrawing();
 	}
 
 	// ------------------- CLEANUP -------------------
+	UnloadFont(uiFont);
 	UnloadModel(player.visual.armModel);
 	Objects::UnloadAll();
 	CloseWindow();

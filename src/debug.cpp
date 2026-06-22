@@ -22,18 +22,18 @@ void Debug::Log(const char *fmt, ...)
 	messages[0][MSG_LEN - 1] = '\0';
 }
 
-void Debug::Draw()
+void Debug::Draw(Font font)
 {
-	int fontSize = 14;
-	int lineHeight = fontSize + 4;
+	int fontSize = 28;
+	int lineHeight = fontSize + 6;
 	int xPad = 10;
 	int yStart = 10;
 	int screenW = GetScreenWidth();
 
 	for (int i = 0; i < count; i++) {
-		int textW = MeasureText(messages[i], fontSize);
-		int x = screenW - xPad - textW;
+		Vector2 size = MeasureTextEx(font, messages[i], fontSize, 1);
+		int x = screenW - xPad - (int)size.x;
 		int y = yStart + i * lineHeight;
-		DrawText(messages[i], x, y, fontSize, BLACK);
+		DrawTextEx(font, messages[i], (Vector2){(float)x, (float)y}, fontSize, 1, BLACK);
 	}
 }

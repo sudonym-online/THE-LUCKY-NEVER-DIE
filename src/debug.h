@@ -2,6 +2,7 @@
 #define DEBUG_H
 
 #include <cstdarg>
+#include "raylib.h"
 
 class Debug {
 	static const int MAX_LOGS = 20;
@@ -14,7 +15,7 @@ public:
 	Debug();
 
 	void Log(const char *fmt, ...);
-	void Draw();
+	void Draw(Font font);
 };
 
 #endif
