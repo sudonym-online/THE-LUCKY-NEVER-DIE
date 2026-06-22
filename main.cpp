@@ -9,8 +9,6 @@
 
 Debug dbg;
 World world;
-StaticBody cats[5];
-Model catModel;
 Player player;
 
 Camera3D camera = {0};
@@ -22,15 +20,6 @@ void init() {
 	InitWindow(windowSize.x, windowSize.y, "THE LUCKY NEVER DIE");
 
 	player.visual.armModel = LoadModel("Assets/Arms.obj");
-	catModel = LoadModel("Assets/Mesh_Cat.obj");
-
-	for (int i = 0; i < 5; i++) {
-		cats[i].model = catModel;
-		cats[i].position = (Vector3){(float)GetRandomValue(-20, 20), 0.0f, (float)GetRandomValue(-20, 20)};
-		cats[i].rotation = (float)GetRandomValue(0, 360);
-		cats[i].scale = (Vector3){0.1f, 0.1f, 0.1f};
-		cats[i].updateAABB();
-	}
 
 	player.position = (Vector3){0.0f, 0.0f, 4.0f};
 	player.updateAABB();
@@ -46,16 +35,20 @@ void init() {
 
 	Objects::InitCache();
 
-	dbg.Log("engine initialized");
-	dbg.Log("%d cat(s) spawned", 5);
+	dbg.Log("engine initialized [LOG]");
 
-	// Example usage (uncomment after creating objects/SomeType/some.json):
-	int gunId = Objects::InitObject("Deagle");
-	int ids[8]; int n;
-	const int *result = Objects::Get("type", "weapon", &n);
+	int catId = Objects::Create("Cat");
+	for (int i = 0; i < 5; i++) {
+		Objects::Spawn(catId,
+			{(float)GetRandomValue(-20, 20), 0.0f, (float)GetRandomValue(-20, 20)},
+			{0.1f, 0.1f, 0.1f}, (float)GetRandomValue(0, 360));
+	}
+	dbg.Log("%d cat(s) spawned [LOG]", 5);
+
+	int gunId = Objects::Create("Deagle");
 	Objects::SetAttr(gunId, "ammo", "24");
-	bool isWeapon = Objects::HasType(gunId, "weapon");
-	dbg.Log("spawned Deagle (id=%d)", gunId);
+	Objects::Spawn(gunId, {2.0f, 0.5f, 0.0f}, {0.4f, 0.4f, 0.4f});
+	dbg.Log("spawned Deagle (id=%d) [LOG]", gunId);
 }
 
 int main(void) {
@@ -76,13 +69,8 @@ int main(void) {
 										0.0f);
 
 		// ------------------- PHYSICS & COLLISION -------------------
-		physicsProcess(deltaTime, player, world, camera, cats, 5);
+		physicsProcess(deltaTime, player, world, camera);
 		bool colliding = player.collision.bodyCount > 0;
-	static bool wasColliding = false;
-	if (colliding != wasColliding) {
-		dbg.Log(colliding ? "COLLISION ENTER" : "COLLISION EXIT");
-		wasColliding = colliding;
-	}
 
 		float speed = Vector2Length((Vector2){player.movement.velocity.x, player.movement.velocity.z});
 		float targetFov = 60.0f + (speed * 1.5f);
@@ -97,12 +85,12 @@ int main(void) {
 				DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
 				DrawGrid(0, 1.0f);
 
-				for (int i = 0; i < 5; i++) {
-						cats[i].draw();
-						if (debug) {
-								DrawBoundingBox(cats[i].aabb, GREEN);
-						}
-				}
+			for (int i = 0; i < Objects::objectInstanceCount; i++) {
+					Objects::objectInstances[i].draw();
+					if (debug) {
+							DrawBoundingBox(Objects::objectInstances[i].aabb, GREEN);
+					}
+			}
 				if (debug) {
 						DrawBoundingBox(player.collision.aabb, RED);
 				}
@@ -131,7 +119,6 @@ int main(void) {
 
 	// ------------------- CLEANUP -------------------
 	UnloadModel(player.visual.armModel);
-	UnloadModel(catModel);
 	Objects::UnloadAll();
 	CloseWindow();
 	return 0;

@@ -1,6 +1,6 @@
 {
   "type": "weapon",
-  "model": "Assets/Deagle.obj",
+  "model": "objects/Deagle/deagle.obj",
   "ammo": "9",
   "reloadTime": "2.0",
   "damage": "10",

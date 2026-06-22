@@ -3,7 +3,7 @@
 
 #include "game.h"
 
-int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera, StaticBody allBodies[], int bodyCount);
+int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera);
 void getCollidingBodies(Player &player, StaticBody allBodies[], int count);
 void resolveCollision(Player &player, StaticBody &body);
 

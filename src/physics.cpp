@@ -1,4 +1,5 @@
 #include "physics.h"
+#include "objects.h"
 #include "raymath.h"
 #include <math.h>
 
@@ -87,7 +88,7 @@ void resolveCollision(Player &player, StaticBody &body) {
 	player.updateAABB();
 }
 
-int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera, StaticBody allBodies[], int bodyCount) {
+int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera) {
 	player.collision.grounded = false;
 
 	applyFriction(deltaTime, player);
@@ -102,6 +103,8 @@ int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &came
 
 	player.updateAABB();
 
+	int bodyCount = Objects::objectInstanceCount;
+	StaticBody *allBodies = Objects::objectInstances;
 	getCollidingBodies(player, allBodies, bodyCount);
 
 	if (player.collision.bodyCount > 0) {

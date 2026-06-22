@@ -12,8 +12,8 @@ raylib/
 .DS_Store
 *.tmp
 
-#Agents
+# Agents
 AGENTS.md
 
-#other idk
+# other idk
 .idea/

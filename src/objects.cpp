@@ -1,4 +1,5 @@
 #include "objects.h"
+#include "raylib.h"
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
@@ -57,8 +58,6 @@ namespace {
     Objects::ObjectTemplate templates[Objects::MAX_TEMPLATES];
     int templateCount = 0;
 
-    Objects::ObjectInstance instances[Objects::MAX_INSTANCES];
-    int instanceCount = 0;
     int nextId = 1;
 
     inline bool isDirectory(const dirent *entry) { return entry->d_type == DT_DIR; }
@@ -102,13 +101,19 @@ namespace {
 
 }
 
+Objects::ObjectInstance Objects::instances[Objects::MAX_INSTANCES];
+int Objects::instanceCount = 0;
+
+StaticBody Objects::objectInstances[Objects::MAX_OBJECT_INSTANCES];
+int Objects::objectInstanceCount = 0;
+
 void Objects::InitCache()
 {
     ScanObjectsDir();
     printf("[Objects] Loaded %d template(s)\n", templateCount);
 }
 
-int Objects::InitObject(const char *name)
+int Objects::Create(const char *name)
 {
     for (int i = 0; i < templateCount; i++) {
         if (strcmp(templates[i].name, name) == 0) {
@@ -174,8 +179,48 @@ void Objects::SetAttr(int id, const char *key, const char *value)
     }
 }
 
+int Objects::Spawn(int id, Vector3 position, Vector3 scale, float rotation)
+{
+    if (objectInstanceCount >= MAX_OBJECT_INSTANCES) return -1;
+
+    ObjectInstance *inst = nullptr;
+    for (int i = 0; i < instanceCount; i++) {
+        if (instances[i].id == id) {
+            inst = &instances[i];
+            break;
+        }
+    }
+    if (!inst) return -1;
+
+    const char *modelPath = nullptr;
+    for (int i = 0; i < inst->attrCount; i++) {
+        if (strcmp(inst->attrs[i].key, "model") == 0) {
+            modelPath = inst->attrs[i].value;
+            break;
+        }
+    }
+    if (!modelPath) return -1;
+
+    StaticBody &body = objectInstances[objectInstanceCount];
+    body.model = LoadModel(modelPath);
+    body.position = position;
+    body.scale = scale;
+    body.rotation = rotation;
+    body.updateAABB();
+
+    return objectInstanceCount++;
+}
+
+void Objects::UnloadObjectInstances()
+{
+    for (int i = 0; i < objectInstanceCount; i++)
+        UnloadModel(objectInstances[i].model);
+    objectInstanceCount = 0;
+}
+
 void Objects::UnloadAll()
 {
+    UnloadObjectInstances();
     templateCount = 0;
     instanceCount = 0;
     nextId = 1;
