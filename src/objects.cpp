@@ -206,7 +206,7 @@ int Objects::Spawn(int id, Vector3 position, Vector3 scale, float rotation)
     body.position = position;
     body.scale = scale;
     body.rotation = rotation;
-    body.updateAABB();
+    body.UpdateAABB();
 
     return objectInstanceCount++;
 }

@@ -1,16 +1,16 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include "game.h"
 #include "raylib.h"
+
 
 class Player {
 public:
+    static const int MAX_INVENTORY_SIZE = 32;
     struct Inventory {
-        struct Item {
-            int id;
-            const char *name;
-        };
-        Item items[32];
+        int items[Player::MAX_INVENTORY_SIZE];
+        int hand;
         int count = 0;
     } inventory;
 
@@ -19,6 +19,8 @@ public:
         float speed = 50.0f;
         float acceleration = 320.0f;
         float friction = 3.5f;
+        float bufferTime = 0.2f;
+        float bufferTimer = 0.0f;
     } movement;
 
     struct Collision {
@@ -31,11 +33,6 @@ public:
         bool grounded = false;
     } collision;
 
-    struct Jump {
-        float bufferTime = 0.2f;
-        float bufferTimer = 0.0f;
-    } jump;
-
     struct Visuals {
         Model armModel;
         struct ArmConfig {
@@ -47,9 +44,17 @@ public:
 
     Vector3 position = {0.0f, 0.0f, 0.0f};
 
-    void updateAABB();
+private:
+    bool isValidItemId(int itemId);
+
+public:
+    void UpdateAABB();
     void UpdateModelOrientation(Model *model, Camera3D camera);
-    void drawArms(Camera3D camera);
+    void DrawArms(Camera3D camera);
+    void Stash(int itemId, bool canPickup);
+    void Unstash(int itemId, bool canDrop);
+    void Hold(int itemId);
+
 };
 
 #endif

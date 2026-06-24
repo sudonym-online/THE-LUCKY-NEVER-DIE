@@ -26,7 +26,7 @@ void init() {
 	player.visual.armModel = LoadModel("Assets/Arms.obj");
 
 	player.position = (Vector3){0.0f, 0.0f, 4.0f};
-	player.updateAABB();
+	player.UpdateAABB();
 
 	camera.position = (Vector3){player.position.x, player.position.y + player.collision.height, player.position.z};
 	camera.target = (Vector3){0.0f, 2.0f, 0.0f};
@@ -49,10 +49,10 @@ void init() {
 	}
 	dbg.Log("%d cat(s) spawned [LOG]", 5);
 
-	int gunId = Objects::Create("Deagle");
-	Objects::SetAttr(gunId, "ammo", "24");
-	Objects::Spawn(gunId, {2.0f, 0.5f, 0.0f}, {0.4f, 0.4f, 0.4f});
-	dbg.Log("spawned Deagle (id=%d) [LOG]", gunId);
+	int deagle = Objects::Create("Deagle");
+	Objects::SetAttr(deagle, "ammo", "24");
+	Objects::Spawn(deagle, {2.0f, 0.5f, 0.0f}, {0.4f, 0.4f, 0.4f});
+	dbg.Log("spawned Deagle (id=%d) [LOG]", deagle);
 }
 
 int main(void) {
@@ -106,7 +106,7 @@ int main(void) {
 
 		// ---- TOP LAYER ----
 		BeginMode3D(camera);
-				player.drawArms(camera);
+				player.DrawArms(camera);
 		EndMode3D();
 
 		// ------------------- UI -------------------

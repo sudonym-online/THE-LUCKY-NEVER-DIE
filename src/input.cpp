@@ -27,6 +27,6 @@ void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
 	}
 
 	if (IsKeyPressed(KEY_SPACE)) {
-		player.jump.bufferTimer = player.jump.bufferTime;
+		player.movement.bufferTimer = player.movement.bufferTime;
 	}
 }

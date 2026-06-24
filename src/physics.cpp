@@ -30,15 +30,15 @@ void speedCheck(Player &player) {
 }
 
 void applyJump(Player &player) {
-	if (player.jump.bufferTimer > 0 && player.collision.grounded) {
+	if (player.movement.bufferTimer > 0 && player.collision.grounded) {
 		player.movement.velocity.y = 55.0f;
-		player.jump.bufferTimer = 0;
+		player.movement.bufferTimer = 0;
 	}
 }
 
 void bufferCountdown(float deltaTime, Player &player) {
-	if (player.jump.bufferTimer > 0) {
-		player.jump.bufferTimer -= deltaTime;
+	if (player.movement.bufferTimer > 0) {
+		player.movement.bufferTimer -= deltaTime;
 	}
 }
 
@@ -85,7 +85,7 @@ void resolveCollision(Player &player, StaticBody &body) {
 		}
 	}
 
-	player.updateAABB();
+	player.UpdateAABB();
 }
 
 int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera) {
@@ -101,7 +101,7 @@ int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &came
 	floorCheck(player);
 	speedCheck(player);
 
-	player.updateAABB();
+	player.UpdateAABB();
 
 	int bodyCount = Objects::objectInstanceCount;
 	StaticBody *allBodies = Objects::objectInstances;

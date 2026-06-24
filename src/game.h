@@ -10,7 +10,7 @@ struct StaticBody {
     Vector3 scale;
     BoundingBox aabb;
 
-    void updateAABB();
+    void UpdateAABB();
     void draw();
 };
 

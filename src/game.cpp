@@ -3,7 +3,7 @@
 #include <cmath>
 #include <float.h>
 
-void StaticBody::updateAABB() {
+void StaticBody::UpdateAABB() {
 	BoundingBox modelAABB = GetModelBoundingBox(model);
 
 	Matrix transform = MatrixScale(scale.x, scale.y, scale.z);

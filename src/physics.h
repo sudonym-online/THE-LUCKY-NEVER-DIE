@@ -2,6 +2,7 @@
 #define PHYSICS_H
 
 #include "game.h"
+#include "player.h"
 
 int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera);
 void getCollidingBodies(Player &player, StaticBody allBodies[], int count);
