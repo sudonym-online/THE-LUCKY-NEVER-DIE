@@ -22,17 +22,27 @@ namespace Objects {
         int attrCount;
     };
 
+    enum ObjectType {
+        TYPE_OBJECT,
+        TYPE_PHYSICAL
+    };
+
+
     struct ObjectInstance {
         int id;
         Attribute attrs[MAX_ATTRS];
         int attrCount;
     };
 
-    extern ObjectInstance instances[MAX_INSTANCES];
-    extern int instanceCount;
+    struct ObjectRegistry {
+        ObjectInstance instances[MAX_INSTANCES];
+        int instanceCount;
 
-    extern StaticBody objectInstances[MAX_OBJECT_INSTANCES];
-    extern int objectInstanceCount;
+        StaticBody bodies[MAX_OBJECT_INSTANCES];
+        int bodyCount;
+    };
+
+    extern ObjectRegistry registry;
 
     void InitCache();
     int  Create(const char *name);

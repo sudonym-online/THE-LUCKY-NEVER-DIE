@@ -103,8 +103,8 @@ int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &came
 
 	player.UpdateAABB();
 
-	int bodyCount = Objects::objectInstanceCount;
-	StaticBody *allBodies = Objects::objectInstances;
+	int bodyCount = Objects::registry.bodyCount;
+	StaticBody *allBodies = Objects::registry.bodies;
 	getCollidingBodies(player, allBodies, bodyCount);
 
 	if (player.collision.bodyCount > 0) {

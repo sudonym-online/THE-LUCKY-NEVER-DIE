@@ -101,11 +101,7 @@ namespace {
 
 }
 
-Objects::ObjectInstance Objects::instances[Objects::MAX_INSTANCES];
-int Objects::instanceCount = 0;
-
-StaticBody Objects::objectInstances[Objects::MAX_OBJECT_INSTANCES];
-int Objects::objectInstanceCount = 0;
+Objects::ObjectRegistry Objects::registry = {};
 
 void Objects::InitCache()
 {
@@ -117,12 +113,12 @@ int Objects::Create(const char *name)
 {
     for (int i = 0; i < templateCount; i++) {
         if (strcmp(templates[i].name, name) == 0) {
-            if (instanceCount >= MAX_INSTANCES) return -1;
-            ObjectInstance *inst = &instances[instanceCount];
+            if (registry.instanceCount >= MAX_INSTANCES) return -1;
+            ObjectInstance *inst = &registry.instances[registry.instanceCount];
             inst->id = nextId++;
             inst->attrCount = templates[i].attrCount;
             memcpy(inst->attrs, templates[i].attrs, sizeof(Attribute) * inst->attrCount);
-            instanceCount++;
+            registry.instanceCount++;
             return inst->id;
         }
     }
@@ -133,11 +129,11 @@ const int *Objects::Get(const char *key, const char *value, int *outCount)
 {
     static int results[MAX_INSTANCES];
     int count = 0;
-    for (int i = 0; i < instanceCount; i++) {
-        for (int j = 0; j < instances[i].attrCount; j++) {
-            if (strcmp(instances[i].attrs[j].key, key) == 0 &&
-                strcmp(instances[i].attrs[j].value, value) == 0) {
-                results[count++] = instances[i].id;
+    for (int i = 0; i < registry.instanceCount; i++) {
+        for (int j = 0; j < registry.instances[i].attrCount; j++) {
+            if (strcmp(registry.instances[i].attrs[j].key, key) == 0 &&
+                strcmp(registry.instances[i].attrs[j].value, value) == 0) {
+                results[count++] = registry.instances[i].id;
                 break;
             }
         }
@@ -148,11 +144,11 @@ const int *Objects::Get(const char *key, const char *value, int *outCount)
 
 bool Objects::HasType(int id, const char *type)
 {
-    for (int i = 0; i < instanceCount; i++) {
-        if (instances[i].id != id) continue;
-        for (int j = 0; j < instances[i].attrCount; j++) {
-            if (strcmp(instances[i].attrs[j].key, "type") == 0 &&
-                strcmp(instances[i].attrs[j].value, type) == 0)
+    for (int i = 0; i < registry.instanceCount; i++) {
+        if (registry.instances[i].id != id) continue;
+        for (int j = 0; j < registry.instances[i].attrCount; j++) {
+            if (strcmp(registry.instances[i].attrs[j].key, "type") == 0 &&
+                strcmp(registry.instances[i].attrs[j].value, type) == 0)
                 return true;
         }
         return false;
@@ -162,18 +158,18 @@ bool Objects::HasType(int id, const char *type)
 
 void Objects::SetAttr(int id, const char *key, const char *value)
 {
-    for (int i = 0; i < instanceCount; i++) {
-        if (instances[i].id != id) continue;
-        for (int j = 0; j < instances[i].attrCount; j++) {
-            if (strcmp(instances[i].attrs[j].key, key) == 0) {
-                strncpy(instances[i].attrs[j].value, value, sizeof(instances[i].attrs[0].value) - 1);
+    for (int i = 0; i < registry.instanceCount; i++) {
+        if (registry.instances[i].id != id) continue;
+        for (int j = 0; j < registry.instances[i].attrCount; j++) {
+            if (strcmp(registry.instances[i].attrs[j].key, key) == 0) {
+                strncpy(registry.instances[i].attrs[j].value, value, sizeof(registry.instances[i].attrs[0].value) - 1);
                 return;
             }
         }
-        if (instances[i].attrCount < MAX_ATTRS) {
-            strncpy(instances[i].attrs[instances[i].attrCount].key, key, sizeof(instances[i].attrs[0].key) - 1);
-            strncpy(instances[i].attrs[instances[i].attrCount].value, value, sizeof(instances[i].attrs[0].value) - 1);
-            instances[i].attrCount++;
+        if (registry.instances[i].attrCount < MAX_ATTRS) {
+            strncpy(registry.instances[i].attrs[registry.instances[i].attrCount].key, key, sizeof(registry.instances[i].attrs[0].key) - 1);
+            strncpy(registry.instances[i].attrs[registry.instances[i].attrCount].value, value, sizeof(registry.instances[i].attrs[0].value) - 1);
+            registry.instances[i].attrCount++;
         }
         return;
     }
@@ -181,12 +177,12 @@ void Objects::SetAttr(int id, const char *key, const char *value)
 
 int Objects::Spawn(int id, Vector3 position, Vector3 scale, float rotation)
 {
-    if (objectInstanceCount >= MAX_OBJECT_INSTANCES) return -1;
+    if (registry.bodyCount >= MAX_OBJECT_INSTANCES) return -1;
 
     ObjectInstance *inst = nullptr;
-    for (int i = 0; i < instanceCount; i++) {
-        if (instances[i].id == id) {
-            inst = &instances[i];
+    for (int i = 0; i < registry.instanceCount; i++) {
+        if (registry.instances[i].id == id) {
+            inst = &registry.instances[i];
             break;
         }
     }
@@ -201,27 +197,27 @@ int Objects::Spawn(int id, Vector3 position, Vector3 scale, float rotation)
     }
     if (!modelPath) return -1;
 
-    StaticBody &body = objectInstances[objectInstanceCount];
+    StaticBody &body = registry.bodies[registry.bodyCount];
     body.model = LoadModel(modelPath);
     body.position = position;
     body.scale = scale;
     body.rotation = rotation;
     body.UpdateAABB();
 
-    return objectInstanceCount++;
+    return registry.bodyCount++;
 }
 
 void Objects::UnloadObjectInstances()
 {
-    for (int i = 0; i < objectInstanceCount; i++)
-        UnloadModel(objectInstances[i].model);
-    objectInstanceCount = 0;
+    for (int i = 0; i < registry.bodyCount; i++)
+        UnloadModel(registry.bodies[i].model);
+    registry.bodyCount = 0;
 }
 
 void Objects::UnloadAll()
 {
     UnloadObjectInstances();
     templateCount = 0;
-    instanceCount = 0;
+    registry.instanceCount = 0;
     nextId = 1;
 }

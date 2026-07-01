@@ -89,10 +89,10 @@ int main(void) {
 				DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
 				DrawGrid(0, 1.0f);
 
-			for (int i = 0; i < Objects::objectInstanceCount; i++) {
-					Objects::objectInstances[i].draw();
+			for (int i = 0; i < Objects::registry.bodyCount; i++) {
+					Objects::registry.bodies[i].draw();
 					if (debug) {
-							DrawBoundingBox(Objects::objectInstances[i].aabb, GREEN);
+							DrawBoundingBox(Objects::registry.bodies[i].aabb, GREEN);
 					}
 			}
 				if (debug) {
