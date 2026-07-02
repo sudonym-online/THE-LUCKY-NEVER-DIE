@@ -42,7 +42,7 @@ void init() {
 
 	dbg.Log("engine initialized [LOG]");
 
-	asphaltTex = LoadTexture("Assets/Asphalt.png");
+	asphaltTex = LoadTexture("objects/Map/MAP.png");
 
 	int mapId = Objects::Create("Map");
 	int mapBody = Objects::Spawn(mapId, {0.0f, 0.0f, 0.0f});
