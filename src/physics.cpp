@@ -75,6 +75,7 @@ static void resolveBodyTriangles(Player &player, StaticBody &body, float gravity
 	for (int t = 0; t < body.triCount; t++) {
 		Triangle &tri = Objects::registry.trianglePool[body.triOffset + t];
 
+		// ------------------- BROAD PHASE -------------------
 		if (fmaxf(fmaxf(tri.v0.x, tri.v1.x), tri.v2.x) < box.min.x ||
 		    fminf(fminf(tri.v0.x, tri.v1.x), tri.v2.x) > box.max.x) continue;
 		if (fmaxf(fmaxf(tri.v0.y, tri.v1.y), tri.v2.y) < box.min.y ||
@@ -82,6 +83,7 @@ static void resolveBodyTriangles(Player &player, StaticBody &body, float gravity
 		if (fmaxf(fmaxf(tri.v0.z, tri.v1.z), tri.v2.z) < box.min.z ||
 		    fminf(fminf(tri.v0.z, tri.v1.z), tri.v2.z) > box.max.z) continue;
 
+		// ------------------- NARROW PHASE -------------------
 		const Vector3 &n = tri.normal;
 		float cx = (box.min.x + box.max.x) * 0.5f;
 		float cy = (box.min.y + box.max.y) * 0.5f;
