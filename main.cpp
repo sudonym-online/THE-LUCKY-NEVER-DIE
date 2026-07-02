@@ -12,6 +12,7 @@ Debug dbg;
 World world;
 Player player;
 Font uiFont;
+Texture2D asphaltTex;
 
 Camera3D camera = {0};
 float mouseSensitivity = 0.15f;
@@ -40,6 +41,13 @@ void init() {
 	Objects::InitCache();
 
 	dbg.Log("engine initialized [LOG]");
+
+	asphaltTex = LoadTexture("Assets/Asphalt.png");
+
+	int mapId = Objects::Create("Map");
+	int mapBody = Objects::Spawn(mapId, {0.0f, 0.0f, 0.0f});
+	Objects::registry.bodies[mapBody].model.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = asphaltTex;
+	dbg.Log("spawned Map [LOG]");
 
 	int catId = Objects::Create("Cat");
 	for (int i = 0; i < 5; i++) {
@@ -86,9 +94,6 @@ int main(void) {
 
 		// ---- BOTTOM LAYER ----
 		BeginMode3D(camera);
-				DrawPlane((Vector3){0, 0, 0}, (Vector2){50, 50}, LIGHTGRAY);
-				DrawGrid(0, 1.0f);
-
 			for (int i = 0; i < Objects::registry.bodyCount; i++) {
 					Objects::registry.bodies[i].draw();
 					if (debug) {
@@ -123,6 +128,7 @@ int main(void) {
 
 	// ------------------- CLEANUP -------------------
 	UnloadFont(uiFont);
+	UnloadTexture(asphaltTex);
 	UnloadModel(player.visual.armModel);
 	Objects::UnloadAll();
 	CloseWindow();

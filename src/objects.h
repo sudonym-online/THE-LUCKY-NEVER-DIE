@@ -10,6 +10,7 @@ namespace Objects {
     const int MAX_TEMPLATES = 32;
     const int MAX_INSTANCES = 128;
     const int MAX_OBJECT_INSTANCES = 128;
+    const int MAX_TOTAL_TRIANGLES = 32768;
 
     struct Attribute {
         char key[32];
@@ -40,6 +41,9 @@ namespace Objects {
 
         StaticBody bodies[MAX_OBJECT_INSTANCES];
         int bodyCount;
+
+        Triangle trianglePool[MAX_TOTAL_TRIANGLES];
+        int trianglePoolCount;
     };
 
     extern ObjectRegistry registry;

@@ -1,6 +1,11 @@
 CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -Isrc -Iraylib/src
-LDFLAGS = -Lraylib/build/raylib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lXcursor -lXinerama -lXrandr -lXi
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+  LDFLAGS = -Lraylib/build/raylib -lraylib -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
+else
+  LDFLAGS = -Lraylib/build/raylib -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 -lXcursor -lXinerama -lXrandr -lXi
+endif
 
 SRC = main.cpp src/debug.cpp src/game.cpp src/input.cpp src/objects.cpp src/physics.cpp src/player.cpp
 OBJ = $(SRC:.cpp=.o)

@@ -203,6 +203,7 @@ int Objects::Spawn(int id, Vector3 position, Vector3 scale, float rotation)
     body.scale = scale;
     body.rotation = rotation;
     body.UpdateAABB();
+    body.ExtractTriangles(registry);
 
     return registry.bodyCount++;
 }
@@ -212,6 +213,7 @@ void Objects::UnloadObjectInstances()
     for (int i = 0; i < registry.bodyCount; i++)
         UnloadModel(registry.bodies[i].model);
     registry.bodyCount = 0;
+    registry.trianglePoolCount = 0;
 }
 
 void Objects::UnloadAll()
