@@ -6,7 +6,6 @@ namespace {
 
     Model skyboxModel;
     Shader skyboxShader;
-    Shader cubemapShader;
 
     // Generate a cubemap (6 faces) from an equirectangular panorama texture by
     // rendering the panorama onto each face with the cubemap conversion shader.
@@ -84,13 +83,14 @@ void Skybox::Load(const char *panoramaPath)
     SetShaderValue(skyboxShader, GetShaderLocation(skyboxShader, "doGamma"), &doGamma, SHADER_UNIFORM_INT);
     SetShaderValue(skyboxShader, GetShaderLocation(skyboxShader, "vflipped"), &vflipped, SHADER_UNIFORM_INT);
 
-    cubemapShader = LoadShader("Assets/shaders/cubemap.vs", "Assets/shaders/cubemap.fs");
+    Shader cubemapShader = LoadShader("Assets/shaders/cubemap.vs", "Assets/shaders/cubemap.fs");
     int equirectSlot = 0;
     SetShaderValue(cubemapShader, GetShaderLocation(cubemapShader, "equirectangularMap"), &equirectSlot, SHADER_UNIFORM_INT);
 
     Texture2D panorama = LoadTexture(panoramaPath);
     skyboxModel.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(cubemapShader, panorama, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     UnloadTexture(panorama);
+    UnloadShader(cubemapShader);
 }
 
 void Skybox::Draw()
@@ -105,7 +105,6 @@ void Skybox::Draw()
 
 void Skybox::Unload()
 {
-    UnloadShader(cubemapShader);
     UnloadShader(skyboxModel.materials[0].shader);
     UnloadTexture(skyboxModel.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture);
     UnloadModel(skyboxModel);

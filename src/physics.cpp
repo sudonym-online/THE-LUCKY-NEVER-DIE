@@ -1,6 +1,5 @@
 #include "physics.h"
 #include "objects.h"
-#include "player.h"
 #include "raymath.h"
 #include <math.h>
 
@@ -9,8 +8,10 @@ static void applyFriction(float deltaTime, Player &player) {
     player.movement.velocity.z *= (1.0f - player.movement.friction * deltaTime);
 }
 
-static void applyGravity(float deltaTime, Player &player, World &world) {
-    player.movement.velocity.y -= world.gravity * deltaTime;
+static const float GRAVITY = 120.0f;
+
+static void applyGravity(float deltaTime, Player &player) {
+    player.movement.velocity.y -= GRAVITY * deltaTime;
 }
 
 static void floorCheck(Player &player) {
@@ -32,17 +33,6 @@ static void applyJump(Player &player) {
 static void bufferCountdown(float deltaTime, Player &player) {
     if (player.movement.bufferTimer > 0) {
         player.movement.bufferTimer -= deltaTime;
-    }
-}
-
-static void getCollidingBodies(Player &player, StaticBody allBodies[], int count) {
-    player.collision.bodyCount = 0;
-    for (int i = 0; i < count; i++) {
-        if (CheckCollisionBoxes(player.collision.aabb, allBodies[i].aabb)) {
-            if (player.collision.bodyCount < 16) {
-                player.collision.bodies[player.collision.bodyCount++] = &allBodies[i];
-            }
-        }
     }
 }
 
@@ -76,7 +66,7 @@ static void slide(Player &player, const Vector3 &n, float gravity, float deltaTi
     }
 }
 
-static void resolveBodyTriangles(Player &player, StaticBody &body, float gravity, float deltaTime) {
+static void resolveBodyTriangles(Player &player, StaticBody &body, float deltaTime) {
     const BoundingBox &box = player.collision.aabb;
     for (int t = 0; t < body.triCount; t++) {
         Triangle &tri = Objects::registry.trianglePool[body.triOffset + t];
@@ -104,31 +94,26 @@ static void resolveBodyTriangles(Player &player, StaticBody &body, float gravity
         if (d < 0.0f || d >= r) continue;
 
         float depth = r - d;
-        player.position.x += n.x * depth;
-        player.position.y += n.y * depth;
-        player.position.z += n.z * depth;
+        player.position = Vector3Add(player.position, Vector3Scale(n, depth));
         player.UpdateAABB();
 
-        float vDotN = player.movement.velocity.x*n.x + player.movement.velocity.y*n.y + player.movement.velocity.z*n.z;
-        if (vDotN < 0.0f) {
-            player.movement.velocity.x -= n.x * vDotN;
-            player.movement.velocity.y -= n.y * vDotN;
-            player.movement.velocity.z -= n.z * vDotN;
-        }
+        float vDotN = Vector3DotProduct(player.movement.velocity, n);
+        if (vDotN < 0.0f)
+            player.movement.velocity = Vector3Subtract(player.movement.velocity, Vector3Scale(n, vDotN));
 
         if (n.y > SLOPE_FLOOR_Y) {
             player.collision.grounded = true;
         } else if (n.y > SLOPE_WALL_Y) {
-            slide(player, n, gravity, deltaTime);
+            slide(player, n, GRAVITY, deltaTime);
         }
     }
 }
 
-int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera) {
+void physicsProcess(float deltaTime, Player &player, Camera3D &camera) {
     player.collision.grounded = false;
 
     applyFriction(deltaTime, player);
-    applyGravity(deltaTime, player, world);
+    applyGravity(deltaTime, player);
 
     player.position.x += player.movement.velocity.x * deltaTime;
     player.position.z += player.movement.velocity.z * deltaTime;
@@ -138,18 +123,17 @@ int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &came
 
     player.UpdateAABB();
 
-    int bodyCount = Objects::registry.bodyCount;
-    StaticBody *allBodies = Objects::registry.bodies;
-    getCollidingBodies(player, allBodies, bodyCount);
-
-    if (player.collision.bodyCount > 0) {
-        for (int i = 0; i < player.collision.bodyCount; i++) {
-            resolveBodyTriangles(player, *player.collision.bodies[i], world.gravity, deltaTime);
-        }
+    // test against the pre-resolve box so push-outs do not change which bodies count
+    BoundingBox box = player.collision.aabb;
+    player.collision.bodyCount = 0;
+    for (int i = 0; i < Objects::registry.bodyCount; i++) {
+        if (!CheckCollisionBoxes(box, Objects::registry.bodies[i].aabb)) continue;
+        player.collision.bodyCount++;
+        resolveBodyTriangles(player, Objects::registry.bodies[i], deltaTime);
     }
 
     if (!player.collision.wasGrounded && player.collision.grounded) {
-        float hSpeed = sqrtf(player.movement.velocity.x * player.movement.velocity.x + player.movement.velocity.z * player.movement.velocity.z);
+        float hSpeed = Vector2Length((Vector2){player.movement.velocity.x, player.movement.velocity.z});
         if (hSpeed > 0.001f) {
             player.movement.velocity.x += boost * (player.movement.velocity.x / hSpeed);
             player.movement.velocity.z += boost * (player.movement.velocity.z / hSpeed);
@@ -177,6 +161,4 @@ int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &came
     Vector3 moveDiff = Vector3Subtract(newCamPos, camera.position);
     camera.position = newCamPos;
     camera.target = Vector3Add(camera.target, moveDiff);
-
-    return player.collision.bodyCount;
 }

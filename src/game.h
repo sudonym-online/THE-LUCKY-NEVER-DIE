@@ -21,20 +21,10 @@ struct StaticBody {
     int                 triCount;
     int                 instanceId =        0;
 
+    Matrix Transform();
     void UpdateAABB();
     void ExtractTriangles(Objects::ObjectRegistry &reg);
     void draw();
-};
-
-struct Item {
-    int                 id;
-    const char          *name;
-};
-
-enum { MAX_ITEMS = 32 };
-
-struct World {
-    float               gravity =           120.0f;
 };
 
 #endif

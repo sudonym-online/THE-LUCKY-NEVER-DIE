@@ -10,7 +10,6 @@
 #include "src/skybox.h"
 
 Debug dbg;
-World world;
 Player player;
 Font uiFont;
 Texture2D asphaltTex;
@@ -67,14 +66,6 @@ void init() {
     }
     dbg.Log("spawned %d map tiles [LOG]", MAP_GRID * MAP_GRID);
 
-    // int catId = Objects::Create("Cat");
-    // for (int i = 0; i < 5; i++) {
-    //     Objects::Spawn(catId,
-    //         {(float)GetRandomValue(-20, 20), 0.0f, (float)GetRandomValue(-20, 20)},
-    //         {0.1f, 0.1f, 0.1f}, (float)GetRandomValue(0, 360));
-    // }
-    // dbg.Log("%d cat(s) spawned [LOG]", 5);
-
     int deagle = Objects::Create("Deagle");
     Objects::Set(deagle, "ammo", "24");
     Objects::Spawn(deagle, {2.0f, 0.5f, 0.0f}, {0.4f, 0.4f, 0.4f});
@@ -99,7 +90,7 @@ int main(void) {
                                         0.0f);
 
         // ------------------- PHYSICS & COLLISION -------------------
-        physicsProcess(deltaTime, player, world, camera);
+        physicsProcess(deltaTime, player, camera);
         bool colliding = player.collision.bodyCount > 0;
 
         float speed = Vector2Length((Vector2){player.movement.velocity.x, player.movement.velocity.z});

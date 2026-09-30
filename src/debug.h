@@ -9,11 +9,9 @@ class Debug {
     static const int MSG_LEN = 128;
 
     char messages[MAX_LOGS][MSG_LEN];
-    int count;
+    int count = 0;
 
 public:
-    Debug();
-
     void Log(const char *fmt, ...);
     void Clear();
     void Draw(Font font);

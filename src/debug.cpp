@@ -3,8 +3,6 @@
 #include <cstdio>
 #include <cstring>
 
-Debug::Debug() : count(0) {}
-
 void Debug::Log(const char *fmt, ...)
 {
     va_list args;

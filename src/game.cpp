@@ -2,14 +2,16 @@
 #include "objects.h"
 #include "raymath.h"
 #include <cmath>
-#include <float.h>
+
+Matrix StaticBody::Transform() {
+    Matrix transform = MatrixScale(scale.x, scale.y, scale.z);
+    transform = MatrixMultiply(transform, MatrixRotateY(rotation * DEG2RAD));
+    return MatrixMultiply(transform, MatrixTranslate(position.x, position.y, position.z));
+}
 
 void StaticBody::UpdateAABB() {
     BoundingBox modelAABB = GetModelBoundingBox(model);
-
-    Matrix transform = MatrixScale(scale.x, scale.y, scale.z);
-    transform = MatrixMultiply(transform, MatrixRotateY(rotation * DEG2RAD));
-    transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, position.z));
+    Matrix transform = Transform();
 
     Vector3 corners[8] = {
             {modelAABB.min.x, modelAABB.min.y, modelAABB.min.z},
@@ -40,10 +42,7 @@ void StaticBody::UpdateAABB() {
 void StaticBody::ExtractTriangles(Objects::ObjectRegistry &reg) {
     triOffset = reg.trianglePoolCount;
     triCount = 0;
-
-    Matrix transform = MatrixScale(scale.x, scale.y, scale.z);
-    transform = MatrixMultiply(transform, MatrixRotateY(rotation * DEG2RAD));
-    transform = MatrixMultiply(transform, MatrixTranslate(position.x, position.y, position.z));
+    Matrix transform = Transform();
 
     for (int m = 0; m < model.meshCount; m++) {
         Mesh &mesh = model.meshes[m];

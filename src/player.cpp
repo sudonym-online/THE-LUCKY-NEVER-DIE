@@ -3,9 +3,15 @@
 #include "raymath.h"
 #include <cmath>
 #include <cstdio>
-#include <float.h>
 
 inline bool Player::isValid(int itemId) { return itemId > 0; }
+
+static Vector3 scaleOf(int itemId) {
+    Vector3 scale = {1.0f, 1.0f, 1.0f};
+    const char *attr = Objects::Get(itemId, "scale");
+    if (attr) sscanf(attr, "%f,%f,%f", &scale.x, &scale.y, &scale.z);
+    return scale;
+}
 
 void Player::UpdateAABB() {
     float bodyHeight = collision.height + 0.5f;
@@ -27,18 +33,14 @@ void Player::UpdateModelOrientation(Model *model, Camera3D camera) {
 
 void Player::DrawArms(Camera3D camera) {
     forward = Vector3Normalize(Vector3Subtract(camera.target, camera.position));
-    Vector3 right = Vector3Normalize(Vector3CrossProduct((Vector3){0, 1, 0}, forward));
+    right = Vector3Normalize(Vector3CrossProduct((Vector3){0, 1, 0}, forward));
 
     Vector3 baseOffset  = Vector3Add(Vector3Scale(forward, visual.armConfig.dist), Vector3Scale((Vector3){0, 1, 0}, visual.armConfig.height));
     Vector3 leftArmPos  = Vector3Add(camera.position, Vector3Add(baseOffset, Vector3Scale(right, -visual.armConfig.width)));
     Vector3 rightArmPos = Vector3Add(camera.position, Vector3Add(baseOffset, Vector3Scale(right, visual.armConfig.width)));
 
-    Vector3 handGripOffset = Vector3Scale(forward, visual.heldModelConfig.dist);
-    handGripPosition = Vector3Add(camera.position, Vector3Add(baseOffset, handGripOffset));
-
-    UpdateModelOrientation(&visual.armModel, camera);
-
     // ARMS
+    UpdateModelOrientation(&visual.armModel, camera);
 
     DrawModelEx(visual.armModel, leftArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED);
     DrawModelEx(visual.armModel, rightArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED);
@@ -46,47 +48,43 @@ void Player::DrawArms(Camera3D camera) {
     // HOLDING
 
     if(inventory.hand == 0) return;
+    Vector3 handGripOffset = Vector3Add(Vector3Scale(forward, visual.heldModelConfig.dist), Vector3Scale(right, visual.heldModelConfig.side));
+    handGripPosition = Vector3Add(camera.position, Vector3Add(baseOffset, handGripOffset));
 
     UpdateModelOrientation(&visual.heldModel, camera);
-
     DrawModelEx(visual.heldModel, handGripPosition, (Vector3){0, 1, 0}, 0.0f, visual.heldModelScale, RED);
 }
 
-void Player::Stash(int itemId, bool canPickup) {
-    if (!canPickup || !isValid(itemId)) return;
+void Player::Stash(int itemId) {
+    if (!isValid(itemId)) return;
     for (int i = 0; i < MAX_INVENTORY_SIZE; i++)
-        if (inventory.items[i] == itemId) return; // already stashed
+        if (inventory.items[i] == itemId) return;
 
     for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
         if (inventory.items[i] == 0) {
             inventory.items[i] = itemId;
-            inventory.count++;
             break;
         }
     }
     Objects::Despawn(itemId);
 }
 
-void Player::Unstash(int itemId, bool canDrop) {
-    if (!canDrop || !isValid(itemId)) return;
+bool Player::Unstash(int itemId) {
+    if (!isValid(itemId)) return false;
 
     bool found = false;
     for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
         if (inventory.items[i] == itemId) {
             inventory.items[i] = 0;
-            inventory.count--;
             found = true;
             break;
         }
     }
-    if (!found) return;
-
-    Vector3 scale = {1.0f, 1.0f, 1.0f};
-    const char *scaleAttr = Objects::Get(itemId, "scale");
-    if (scaleAttr) sscanf(scaleAttr, "%f,%f,%f", &scale.x, &scale.y, &scale.z);
+    if (!found) return false;
 
     Vector3 dropPos = Vector3Add(position, Vector3Scale(forward, 3.0f));
-    Objects::Spawn(itemId, dropPos, scale, 0.0f);
+    Objects::Spawn(itemId, dropPos, scaleOf(itemId), 0.0f);
+    return true;
 }
 
 void Player::Hold(int itemId) {
@@ -106,7 +104,5 @@ void Player::Hold(int itemId) {
     inventory.hand = itemId;
     visual.heldModel = LoadModel(modelPath);
 
-    visual.heldModelScale = (Vector3){1.0f, 1.0f, 1.0f};
-    const char *scaleAttr = Objects::Get(itemId, "scale");
-    if (scaleAttr) sscanf(scaleAttr, "%f,%f,%f", &visual.heldModelScale.x, &visual.heldModelScale.y, &visual.heldModelScale.z);
+    visual.heldModelScale = scaleOf(itemId);
 }

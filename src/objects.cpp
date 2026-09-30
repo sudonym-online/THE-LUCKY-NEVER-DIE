@@ -142,49 +142,36 @@ const int *Objects::Find(const char *key, const char *value, int *outCount)
     return count > 0 ? results : nullptr;
 }
 
-bool Objects::Has(int id, const char *type)
+static Objects::ObjectInstance *findInstance(int id)
 {
-    for (int i = 0; i < registry.instanceCount; i++) {
-        if (registry.instances[i].id != id) continue;
-        for (int j = 0; j < registry.instances[i].attrCount; j++) {
-            if (strcmp(registry.instances[i].attrs[j].key, "type") == 0 &&
-                strcmp(registry.instances[i].attrs[j].value, type) == 0)
-                return true;
-        }
-        return false;
-    }
-    return false;
+    for (int i = 0; i < Objects::registry.instanceCount; i++)
+        if (Objects::registry.instances[i].id == id) return &Objects::registry.instances[i];
+    return nullptr;
 }
 
 void Objects::Set(int id, const char *key, const char *value)
 {
-    for (int i = 0; i < registry.instanceCount; i++) {
-        if (registry.instances[i].id != id) continue;
-        for (int j = 0; j < registry.instances[i].attrCount; j++) {
-            if (strcmp(registry.instances[i].attrs[j].key, key) == 0) {
-                strncpy(registry.instances[i].attrs[j].value, value, sizeof(registry.instances[i].attrs[0].value) - 1);
-                return;
-            }
+    ObjectInstance *inst = findInstance(id);
+    if (!inst) return;
+    for (int j = 0; j < inst->attrCount; j++) {
+        if (strcmp(inst->attrs[j].key, key) == 0) {
+            strncpy(inst->attrs[j].value, value, sizeof(inst->attrs[0].value) - 1);
+            return;
         }
-        if (registry.instances[i].attrCount < MAX_ATTRS) {
-            strncpy(registry.instances[i].attrs[registry.instances[i].attrCount].key, key, sizeof(registry.instances[i].attrs[0].key) - 1);
-            strncpy(registry.instances[i].attrs[registry.instances[i].attrCount].value, value, sizeof(registry.instances[i].attrs[0].value) - 1);
-            registry.instances[i].attrCount++;
-        }
-        return;
+    }
+    if (inst->attrCount < MAX_ATTRS) {
+        strncpy(inst->attrs[inst->attrCount].key, key, sizeof(inst->attrs[0].key) - 1);
+        strncpy(inst->attrs[inst->attrCount].value, value, sizeof(inst->attrs[0].value) - 1);
+        inst->attrCount++;
     }
 }
 
 const char *Objects::Get(int id, const char *key)
 {
-    for (int i = 0; i < registry.instanceCount; i++) {
-        if (registry.instances[i].id != id) continue;
-        for (int j = 0; j < registry.instances[i].attrCount; j++) {
-            if (strcmp(registry.instances[i].attrs[j].key, key) == 0)
-                return registry.instances[i].attrs[j].value;
-        }
-        return nullptr;
-    }
+    ObjectInstance *inst = findInstance(id);
+    if (!inst) return nullptr;
+    for (int j = 0; j < inst->attrCount; j++)
+        if (strcmp(inst->attrs[j].key, key) == 0) return inst->attrs[j].value;
     return nullptr;
 }
 
@@ -192,22 +179,7 @@ int Objects::Spawn(int id, Vector3 position, Vector3 scale, float rotation)
 {
     if (registry.bodyCount >= MAX_OBJECT_INSTANCES) return -1;
 
-    ObjectInstance *inst = nullptr;
-    for (int i = 0; i < registry.instanceCount; i++) {
-        if (registry.instances[i].id == id) {
-            inst = &registry.instances[i];
-            break;
-        }
-    }
-    if (!inst) return -1;
-
-    const char *modelPath = nullptr;
-    for (int i = 0; i < inst->attrCount; i++) {
-        if (strcmp(inst->attrs[i].key, "model") == 0) {
-            modelPath = inst->attrs[i].value;
-            break;
-        }
-    }
+    const char *modelPath = Get(id, "model");
     if (!modelPath) return -1;
 
     StaticBody &body = registry.bodies[registry.bodyCount];
@@ -221,7 +193,6 @@ int Objects::Spawn(int id, Vector3 position, Vector3 scale, float rotation)
 
     return registry.bodyCount++;
 }
-
 
 bool Objects::Despawn(int id)
 {

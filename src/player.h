@@ -3,7 +3,6 @@
 
 #include "game.h"
 #include "raylib.h"
-#include <streambuf>
 
 
 class Player {
@@ -12,7 +11,6 @@ public:
     struct Inventory {
         int             items               [Player::MAX_INVENTORY_SIZE];
         int             hand;
-        int             count =             0;
     } inventory;
 
     struct Movement {   
@@ -30,7 +28,6 @@ public:
         float           width =             1.0f;
         float           depth =             1.0f;
         BoundingBox     aabb;   
-        StaticBody      *bodies             [16];
         int             bodyCount =         0;
         bool            grounded =          false;
         bool            wasGrounded =       false;
@@ -51,7 +48,7 @@ public:
         struct HeldModelConfig {
             float       dist =              0.6f;
             float       height =            -2.5f;
-            float       side =              1.0f;
+            float       side =              2.0f;
         } heldModelConfig;
 
     } visual;
@@ -59,6 +56,7 @@ public:
     Vector3             position =          {0.0f, 0.0f, 0.0f};
     Vector3             handGripPosition =  {0.0f, 0.0f, 0.0f};
     Vector3             forward =           {0.0f, 0.0f, 0.0f};
+    Vector3             right =             {0.0f, 0.0f, 0.0f};
     float               yaw =               0.0f;
     float               pitch =             0.0f;
 
@@ -69,8 +67,8 @@ private:
 public:
     void UpdateAABB();
     void DrawArms(Camera3D camera);
-    void Stash(int itemId, bool canPickup);
-    void Unstash(int itemId, bool canDrop);
+    void Stash(int itemId);
+    bool Unstash(int itemId);
     void Hold(int itemId);
 
 };

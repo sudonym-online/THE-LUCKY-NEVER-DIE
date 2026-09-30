@@ -4,7 +4,7 @@
 #include "game.h"
 #include "player.h"
 
-int physicsProcess(float deltaTime, Player &player, World &world, Camera3D &camera);
+void physicsProcess(float deltaTime, Player &player, Camera3D &camera);
 float getBoost();
 
 #endif
