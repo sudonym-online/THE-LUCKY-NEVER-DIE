@@ -2,6 +2,7 @@
 #include "objects.h"
 #include "raymath.h"
 #include <math.h>
+#include <float.h>
 
 static void applyFriction(float deltaTime, Player &player) {
     player.movement.velocity.x *= (1.0f - player.movement.friction * deltaTime);
@@ -161,4 +162,18 @@ void physicsProcess(float deltaTime, Player &player, Camera3D &camera) {
     Vector3 moveDiff = Vector3Subtract(newCamPos, camera.position);
     camera.position = newCamPos;
     camera.target = Vector3Add(camera.target, moveDiff);
+}
+
+RayCollision raycastBox(Ray ray, int *outBody) {
+    RayCollision result = {0};
+    result.hit = false;
+    result.distance = FLT_MAX;
+    for (int i = 0; i < Objects::registry.bodyCount; i++) {
+        RayCollision c = GetRayCollisionBox(ray, Objects::registry.bodies[i].aabb);
+        if (c.hit && c.distance < result.distance) {
+            result = c;
+            *outBody = i;
+        }
+    }
+    return result;
 }
