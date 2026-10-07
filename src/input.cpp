@@ -1,6 +1,7 @@
 #include "input.h"
 #include "objects.h"
 #include "raymath.h"
+#include "player.h"
 
 Vector2 getKeyVector() {
     return (Vector2){
@@ -60,4 +61,26 @@ void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
         //unhold
         player.Hold(-1);
     }
+
+    if (IsKeyPressed(MOUSE_BUTTON_LEFT)){
+
+    }
+
+    if (IsKeyDown(MOUSE_BUTTON_LEFT)) {
+        
+    }
+
+    // // Debug for HeldModelConfig position tweaking
+    // if (IsKeyPressed(KEY_I)) {
+    //     player.visual.heldModelConfig.dist += 0.1f;
+    // }
+    // if (IsKeyPressed(KEY_K)) {
+    //     player.visual.heldModelConfig.dist -= 0.1f;
+    // }
+    // if (IsKeyPressed(KEY_J)) {
+    //     player.visual.heldModelConfig.side += 0.1f;
+    // }
+    // if (IsKeyPressed(KEY_L)) {
+    //     player.visual.heldModelConfig.side -= 0.1f;
+    // }
 }

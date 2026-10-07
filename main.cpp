@@ -132,6 +132,9 @@ int main(void) {
         dbg.Log("boost: %.2f", getBoost());
         dbg.Log("speed: %.2f", speed);
         dbg.Log("max: %.2f",   player.movement.maxSpeed);
+        // dbg.Log("heldModelConfig.dist: %.2f", player.visual.heldModelConfig.dist);
+        // dbg.Log("heldModelConfig.height: %.2f", player.visual.heldModelConfig.height);
+        // dbg.Log("heldModelConfig.side: %.2f", player.visual.heldModelConfig.side);
 
         if (colliding) {
             DrawTextEx(uiFont, "COLLISION DETECTED", (Vector2){10, 10}, 32, 1, RED);

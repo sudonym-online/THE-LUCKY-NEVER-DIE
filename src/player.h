@@ -13,7 +13,7 @@ public:
         int             hand;
     } inventory;
 
-    struct Movement {   
+    struct Movement {
         Vector3         velocity =          {0.0f, 0.0f, 0.0f};
         float           speed =             50.0f;
         float           maxSpeed =          50.0f;
@@ -21,13 +21,13 @@ public:
         float           friction =          3.5f;
         float           bufferTime =        0.2f;
         float           bufferTimer =       0.0f;
-    } movement; 
+    } movement;
 
-    struct Collision {  
+    struct Collision {
         float           height =            5.0f;
         float           width =             1.0f;
         float           depth =             1.0f;
-        BoundingBox     aabb;   
+        BoundingBox     aabb;
         int             bodyCount =         0;
         bool            grounded =          false;
         bool            wasGrounded =       false;
@@ -46,9 +46,9 @@ public:
         } armConfig;
 
         struct HeldModelConfig {
-            float       dist =              0.6f;
+            float       dist =              7.0f;
             float       height =            -2.5f;
-            float       side =              2.0f;
+            float       side =              4.0f;
         } heldModelConfig;
 
     } visual;
@@ -70,7 +70,7 @@ public:
     void Stash(int itemId);
     bool Unstash(int itemId);
     void Hold(int itemId);
-
+    void Use(bool down);
 };
 
 #endif
