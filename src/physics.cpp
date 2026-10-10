@@ -172,7 +172,7 @@ RayCollision raycastBox(Ray ray, int *outBody) {
         RayCollision c = GetRayCollisionBox(ray, Objects::registry.bodies[i].aabb);
         if (c.hit && c.distance < result.distance) {
             result = c;
-            *outBody = i;
+            if (outBody) *outBody = i;
         }
     }
     return result;
