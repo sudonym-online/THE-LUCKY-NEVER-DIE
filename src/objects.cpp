@@ -60,6 +60,9 @@ namespace {
 
     int nextId = 1;
 
+    // constinit: zeroed before any OBJECT_FUNCTION static initializer runs
+    constinit Objects::FunctionRegistry functionRegistry = {};
+
     inline bool isDirectory(const dirent *entry) { return entry->d_type == DT_DIR; }
     inline bool isNavDirectory(const dirent *entry) { return strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0; }
     inline bool isJsonFile(const dirent *entry) { return strcmp(entry->d_name + strlen(entry->d_name) - 5, ".json") == 0; }
@@ -172,6 +175,39 @@ const char *Objects::Get(int id, const char *key)
     if (!inst) return nullptr;
     for (int j = 0; j < inst->attrCount; j++)
         if (strcmp(inst->attrs[j].key, key) == 0) return inst->attrs[j].value;
+    return nullptr;
+}
+
+bool Objects::RegisterFunction(ObjectFunction fn)
+{
+    if (functionRegistry.functionCount >= MAX_FUNCTIONS) return false;
+    for (int i = 0; i < functionRegistry.functionCount; i++) {
+        if (strcmp(functionRegistry.functions[i].name, fn.name) == 0) {
+            printf("[Objects] duplicate function '%s'\n", fn.name);
+            return false;
+        }
+    }
+    functionRegistry.functions[functionRegistry.functionCount++] = fn;
+    return true;
+}
+
+const Objects::ObjectFunction *Objects::FindFunction(int id, const char *name, const void *signature)
+{
+    char key[32];
+    snprintf(key, sizeof(key), "fn.%s", name);
+    const char *target = Get(id, key);
+    if (!target) return nullptr;
+
+    for (int i = 0; i < functionRegistry.functionCount; i++) {
+        const ObjectFunction *fn = &functionRegistry.functions[i];
+        if (strcmp(fn->name, target) != 0) continue;
+        if (fn->signature != signature) {
+            printf("[Objects] '%s' called with wrong args\n", target);
+            return nullptr;
+        }
+        return fn;
+    }
+    printf("[Objects] unknown function '%s'\n", target);
     return nullptr;
 }
 

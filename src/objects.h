@@ -12,6 +12,7 @@ namespace Objects {
     const int MAX_INSTANCES = 128;
     const int MAX_OBJECT_INSTANCES = 128;
     const int MAX_TOTAL_TRIANGLES = 65536;
+    const int MAX_FUNCTIONS = 64;
 
     struct Attribute {
         char key[32];
@@ -41,6 +42,17 @@ namespace Objects {
         int trianglePoolCount;
     };
 
+    struct ObjectFunction {
+        const char      *name;
+        void           (*ptr)();
+        const void      *signature;
+    };
+
+    struct FunctionRegistry {
+        ObjectFunction  functions[MAX_FUNCTIONS];
+        int             functionCount;
+    };
+
     extern ObjectRegistry registry;
 
     void InitCache();
@@ -52,6 +64,29 @@ namespace Objects {
     bool Despawn(int id);
     void UnloadAll();
 
+    // one unique address per argument list
+    template<class... Args> const void *Signature() { static const char tag = 0; return &tag; }
+
+    template<class... Args> ObjectFunction MakeFunction(const char *name, void (*fn)(int, Args...))
+    {
+        return {name, (void (*)())fn, Signature<Args...>()};
+    }
+
+    bool RegisterFunction(ObjectFunction fn);
+    const ObjectFunction *FindFunction(int id, const char *name, const void *signature);
+
+    // runs the function named by the "fn.<name>" attribute. arg types must match exactly.
+    template<class... Args> bool Use(int id, const char *name, Args... args)
+    {
+        const ObjectFunction *fn = FindFunction(id, name, Signature<Args...>());
+        if (!fn) return false;
+        ((void (*)(int, Args...))fn->ptr)(id, args...);
+        return true;
+    }
+
 }
+
+#define OBJECT_FUNCTION(fn) \
+    [[maybe_unused]] static bool fn##Registered = Objects::RegisterFunction(Objects::MakeFunction(#fn, fn))
 
 #endif
