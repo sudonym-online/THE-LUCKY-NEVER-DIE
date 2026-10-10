@@ -1,2 +1,7 @@
 CompileFlags:
   Add: [-std=c++20, -Isrc, -I/opt/homebrew/opt/raylib/include]
+---
+If:
+  PathMatch: objects/.*\.cpp
+CompileFlags:
+  Add: [-I../../src]

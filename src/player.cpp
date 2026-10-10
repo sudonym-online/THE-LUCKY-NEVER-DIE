@@ -108,5 +108,7 @@ void Player::Hold(int itemId) {
 }
 
 void Player::Use(bool down) {
-
+    if (!down || inventory.hand == 0) return;
+    Vector3 eye = {position.x, position.y + collision.height, position.z};
+    Objects::Use(inventory.hand, "use", eye, forward);
 }

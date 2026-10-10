@@ -62,13 +62,7 @@ void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
         player.Hold(-1);
     }
 
-    if (IsKeyPressed(MOUSE_BUTTON_LEFT)){
-
-    }
-
-    if (IsKeyDown(MOUSE_BUTTON_LEFT)) {
-        
-    }
+    player.Use(IsMouseButtonPressed(MOUSE_BUTTON_LEFT));
 
     // // Debug for HeldModelConfig position tweaking
     // if (IsKeyPressed(KEY_I)) {
