@@ -194,7 +194,7 @@ bool Objects::RegisterFunction(ObjectFunction fn)
 const Objects::ObjectFunction *Objects::FindFunction(int id, const char *name, const void *signature)
 {
     char key[32];
-    snprintf(key, sizeof(key), "fn.%s", name);
+    snprintf(key, sizeof(key), "on.%s", name);
     const char *target = Get(id, key);
     if (!target) return nullptr;
 

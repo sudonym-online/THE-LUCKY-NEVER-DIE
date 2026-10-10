@@ -75,7 +75,7 @@ namespace Objects {
     bool RegisterFunction(ObjectFunction fn);
     const ObjectFunction *FindFunction(int id, const char *name, const void *signature);
 
-    // runs the function named by the "fn.<name>" attribute. arg types must match exactly.
+    // runs the function named by the "on.<name>" attribute. arg types must match exactly.
     template<class... Args> bool Use(int id, const char *name, Args... args)
     {
         const ObjectFunction *fn = FindFunction(id, name, Signature<Args...>());
