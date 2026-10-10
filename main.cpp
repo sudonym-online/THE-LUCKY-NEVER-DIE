@@ -22,9 +22,9 @@ Vector2                 windowSize =        {1280, 720};
 void init() {
     InitWindow(windowSize.x, windowSize.y, "THE LUCKY NEVER DIE");
 
-    uiFont = LoadFontEx("Assets/Fonts/Iosevka/IosevkaNerdFontMono-Regular.ttf", 256, nullptr, 0);
+    uiFont = LoadFontEx("assets/Fonts/Iosevka/IosevkaNerdFontMono-Regular.ttf", 256, nullptr, 0);
     SetTextureFilter(uiFont.texture, TEXTURE_FILTER_BILINEAR);
-    player.visual.armModel = LoadModel("Assets/Arms.obj");
+    player.visual.armModel = LoadModel("assets/Arms.obj");
 
     player.position = (Vector3){0.0f, 120.0f, 4.0f};
     player.UpdateAABB();
@@ -42,7 +42,7 @@ void init() {
 
     dbg.Log("engine initialized [LOG]");
 
-    Skybox::Load("Assets/Skybox.png");
+    Skybox::Load("assets/Skybox.png");
 
     asphaltTex = LoadTexture("objects/Map/Map_Texture.png");
 

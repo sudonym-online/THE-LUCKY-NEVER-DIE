@@ -73,7 +73,7 @@ void Skybox::Load(const char *panoramaPath)
     Mesh cube = GenMeshCube(1.0f, 1.0f, 1.0f);
     skyboxModel = LoadModelFromMesh(cube);
 
-    skyboxShader = LoadShader("Assets/shaders/skybox.vs", "Assets/shaders/skybox.fs");
+    skyboxShader = LoadShader("assets/shaders/skybox.vs", "assets/shaders/skybox.fs");
     skyboxModel.materials[0].shader = skyboxShader;
 
     int envMap = MATERIAL_MAP_CUBEMAP;
@@ -83,7 +83,7 @@ void Skybox::Load(const char *panoramaPath)
     SetShaderValue(skyboxShader, GetShaderLocation(skyboxShader, "doGamma"), &doGamma, SHADER_UNIFORM_INT);
     SetShaderValue(skyboxShader, GetShaderLocation(skyboxShader, "vflipped"), &vflipped, SHADER_UNIFORM_INT);
 
-    Shader cubemapShader = LoadShader("Assets/shaders/cubemap.vs", "Assets/shaders/cubemap.fs");
+    Shader cubemapShader = LoadShader("assets/shaders/cubemap.vs", "assets/shaders/cubemap.fs");
     int equirectSlot = 0;
     SetShaderValue(cubemapShader, GetShaderLocation(cubemapShader, "equirectangularMap"), &equirectSlot, SHADER_UNIFORM_INT);
 
