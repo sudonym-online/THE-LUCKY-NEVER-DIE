@@ -39,13 +39,14 @@ void Player::DrawArms(Camera3D camera) {
     Vector3 leftArmPos  = Vector3Add(camera.position, Vector3Add(baseOffset, Vector3Scale(right, -visual.armConfig.width))); 
     Vector3 rightArmPos = Vector3Add(camera.position, Vector3Add(baseOffset, Vector3Scale(right, visual.armConfig.width)));
 
-    // ARMS
+    // --- ARMS
+
     UpdateModelOrientation(&visual.armModel, camera);
 
-    DrawModelEx(visual.armModel, leftArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED); // TODO: get a actual left arm model.
+    DrawModelEx(visual.armModel, leftArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED); //  TODO: get a actual left arm model.
     DrawModelEx(visual.armModel, rightArmPos, (Vector3){0, 1, 0}, 0.0f, (Vector3){1, 1, 1}, RED); 
 
-    // HOLDING
+    // --- HOLDING
 
     if(inventory.hand == 0) return;
     Vector3 handGripOffset = Vector3Add(Vector3Scale(forward, visual.heldModelConfig.dist), Vector3Scale(right, visual.heldModelConfig.side));

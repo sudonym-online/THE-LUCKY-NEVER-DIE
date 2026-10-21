@@ -177,3 +177,21 @@ RayCollision raycastBox(Ray ray, int *outBody) {
     }
     return result;
 }
+
+RayCollision raycastMesh(Ray ray, int *outBody) {
+    // --- setup
+    RayCollision result = {0};
+    result.hit = false;
+    result.distance = FLT_MAX;
+
+    // --- get bodies that aabb intersect with mesh , cant use raycastBox b/c that uses the closes mesh
+
+    int box = -1;
+    RayCollision boxResult = raycastBox(ray, &box);
+
+
+
+    if (!boxResult.hit) return result;
+
+
+}

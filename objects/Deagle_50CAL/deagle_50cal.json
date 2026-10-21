@@ -1,0 +1,6 @@
+{
+  "type": "weapon",
+  "model": "objects/Deagle/deagle.obj",
+  "scale": "0.4,0.4,0.4",
+  "when.spawn" : "recoil"
+}

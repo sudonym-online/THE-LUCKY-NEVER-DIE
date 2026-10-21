@@ -64,17 +64,29 @@ void inputProcess(float deltaTime, Player &player, Camera3D &camera) {
 
     player.Use(IsMouseButtonPressed(MOUSE_BUTTON_LEFT));
 
-    // // Debug for HeldModelConfig position tweaking
+    // Debug for HeldModelConfig position tweaking
     // if (IsKeyPressed(KEY_I)) {
     //     player.visual.heldModelConfig.dist += 0.1f;
+    //     player.visual.armConfig.dist += 0.1f;
     // }
     // if (IsKeyPressed(KEY_K)) {
     //     player.visual.heldModelConfig.dist -= 0.1f;
+    //     player.visual.armConfig.dist -= 0.1f;
     // }
     // if (IsKeyPressed(KEY_J)) {
     //     player.visual.heldModelConfig.side += 0.1f;
+    //     player.visual.armConfig.width += 0.1f;
     // }
     // if (IsKeyPressed(KEY_L)) {
     //     player.visual.heldModelConfig.side -= 0.1f;
+    //     player.visual.armConfig.width -= 0.1f;
+    // }
+    // if (IsKeyPressed(KEY_U)) {
+    //     player.visual.heldModelConfig.height += 0.1f;
+    //     player.visual.armConfig.height += 0.1f;
+    // }
+    // if (IsKeyPressed(KEY_O)) {
+    //     player.visual.heldModelConfig.height -= 0.1f;
+    //     player.visual.armConfig.height -= 0.1f;
     // }
 }
